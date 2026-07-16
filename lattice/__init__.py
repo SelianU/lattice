@@ -5,6 +5,7 @@ Lattice: PyTorch tools for models, training loops, and RL agents.
 __version__ = "0.1.0"
 
 from .networks import (
+    SequenceTransformer,
     build_model,
     make_cnn_mlp,
     make_mlp,
@@ -29,6 +30,7 @@ from .algorithms import (
 
 __all__ = [
     "__version__",
+    "SequenceTransformer",
     "build_model",
     "make_cnn_mlp",
     "make_mlp",

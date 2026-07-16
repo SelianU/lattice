@@ -13,4 +13,5 @@ from .builders import (
 )
 from .language_models import MiniGPT, make_mini_gpt
 from .sequence_builders import make_rnn, make_transformer
+from .sequence_transformer import SequenceTransformer
 from .sequential import build_sequential_model
