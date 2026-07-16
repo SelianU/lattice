@@ -43,6 +43,7 @@ def make_optimizer(
 
     Supported names:
     - "adam"
+    - "adamw"
     - "sgd"
     - "rmsprop"
     """
@@ -51,11 +52,12 @@ def make_optimizer(
 
     optimizer_cls = optimizer
     if isinstance(optimizer, str):
-        optimizer_cls = _optimizer_classes().get(optimizer)
+        optimizer_classes = _optimizer_classes()
+        optimizer_cls = optimizer_classes.get(optimizer)
         if optimizer_cls is None:
             raise ValueError(
                 f"Unknown optimizer '{optimizer}'. "
-                "Available: ['adam', 'sgd', 'rmsprop']"
+                f"Available: {sorted(optimizer_classes)}"
             )
 
     return optimizer_cls(parameters, lr=learning_rate, **optimizer_kwargs)
@@ -64,6 +66,7 @@ def make_optimizer(
 def _optimizer_classes() -> dict:
     return {
         "adam": torch.optim.Adam,
+        "adamw": torch.optim.AdamW,
         "sgd": torch.optim.SGD,
         "rmsprop": torch.optim.RMSprop,
     }

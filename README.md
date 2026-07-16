@@ -138,6 +138,19 @@ print(history.as_dict())
 print(history.last("validation_accuracy"))
 ```
 
+You can also construct an optimizer directly:
+
+```python
+from lattice.training import make_optimizer
+
+optimizer = make_optimizer(
+    "adamw",
+    model.parameters(),
+    learning_rate=1e-4,
+    weight_decay=1e-4,
+)
+```
+
 When you need a custom batch update, pass a custom training step:
 
 ```python
