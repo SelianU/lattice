@@ -50,3 +50,49 @@ def test_padding_values_do_not_change_valid_outputs():
 def test_rejects_fully_padded_rows():
     with pytest.raises(ValueError, match="at least one valid token"):
         make_stack(causal=False)(torch.zeros(1, 2, 4), torch.zeros(1, 2))
+
+
+def test_causal_left_padding_is_finite_and_invariant_in_eval_fast_path():
+    model = make_stack(causal=True)
+    valid_mask = torch.tensor(
+        [[0, 0, 1, 1], [0, 1, 1, 1]],
+        dtype=torch.bool,
+    )
+    inputs = torch.randn(2, 4, 4)
+    changed_padding = inputs.clone()
+    changed_padding[~valid_mask] += 100.0
+
+    with torch.no_grad():
+        outputs = model(inputs, valid_mask)
+        changed_outputs = model(changed_padding, valid_mask)
+
+    assert torch.isfinite(outputs).all()
+    assert torch.equal(outputs[~valid_mask], torch.zeros_like(outputs[~valid_mask]))
+    assert torch.allclose(
+        outputs[valid_mask],
+        changed_outputs[valid_mask],
+        atol=1e-6,
+    )
+
+
+def test_causal_left_padding_keeps_valid_loss_gradients_and_step_finite():
+    model = make_stack(causal=True).train()
+    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
+    valid_mask = torch.tensor(
+        [[0, 0, 1, 1], [0, 1, 1, 1]],
+        dtype=torch.bool,
+    )
+    outputs = model(torch.randn(2, 4, 4), valid_mask)
+
+    assert torch.isfinite(outputs).all()
+    assert torch.equal(outputs[~valid_mask], torch.zeros_like(outputs[~valid_mask]))
+    loss = outputs[valid_mask].square().mean()
+    assert torch.isfinite(loss)
+    optimizer.zero_grad()
+    loss.backward()
+    assert all(
+        parameter.grad is None or torch.isfinite(parameter.grad).all()
+        for parameter in model.parameters()
+    )
+    optimizer.step()
+    assert all(torch.isfinite(parameter).all() for parameter in model.parameters())

@@ -18,6 +18,7 @@ class SequenceTransformer(nn.Module):
         if embedding_dim % num_heads != 0:
             raise ValueError("embedding_dim must be divisible by num_heads")
         self.causal = bool(causal)
+        self.num_heads = num_heads
         layer = nn.TransformerEncoderLayer(
             d_model=embedding_dim,
             nhead=num_heads,
@@ -47,7 +48,7 @@ class SequenceTransformer(nn.Module):
             key_padding_mask = ~valid_mask
         attention_mask = None
         if self.causal:
-            attention_mask = torch.triu(
+            causal_mask = torch.triu(
                 torch.ones(
                     sequence_length,
                     sequence_length,
@@ -56,8 +57,31 @@ class SequenceTransformer(nn.Module):
                 ),
                 diagonal=1,
             )
-        return self.encoder(
+            attention_mask = causal_mask
+            if valid_mask is not None:
+                invalid = ~valid_mask
+                attention_mask = causal_mask.unsqueeze(0) | invalid.unsqueeze(1)
+                safe_diagonal = invalid.unsqueeze(-1) & torch.eye(
+                    sequence_length,
+                    dtype=torch.bool,
+                    device=inputs.device,
+                ).unsqueeze(0)
+                attention_mask = attention_mask & ~safe_diagonal
+                attention_mask = (
+                    attention_mask.unsqueeze(1)
+                    .expand(-1, self.num_heads, -1, -1)
+                    .reshape(
+                        batch_size * self.num_heads,
+                        sequence_length,
+                        sequence_length,
+                    )
+                )
+                key_padding_mask = None
+        outputs = self.encoder(
             inputs,
             mask=attention_mask,
             src_key_padding_mask=key_padding_mask,
         )
+        if valid_mask is not None:
+            outputs = outputs.masked_fill(~valid_mask.unsqueeze(-1), 0.0)
+        return outputs
