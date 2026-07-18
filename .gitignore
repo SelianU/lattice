@@ -54,6 +54,7 @@ logs/
 # Agent/tool local state
 .claude/
 .agents/
+.worktrees/
 
 # OS
 .DS_Store
