@@ -14,12 +14,28 @@ from .networks import (
     make_transformer,
 )
 from .training import (
+    EnvTransition,
+    GymnasiumEnvAdapter,
     SupervisedTrainingConfig,
     quick_dqn,
     quick_ppo,
     quick_sac,
     quick_td3,
     train_supervised_model,
+)
+from .data import (
+    EncodedTrajectory,
+    MinariTrajectorySource,
+    OfflineTrajectorySource,
+    TrajectoryBatch,
+    collate_trajectories,
+)
+from .networks.encoders import StructuredEncoder
+from .spaces import (
+    ActionAdapter,
+    ObservationAdapter,
+    SpaceSpec,
+    infer_space_spec,
 )
 from .algorithms import (
     make_dqn_agent,
@@ -31,6 +47,18 @@ from .algorithms import (
 __all__ = [
     "__version__",
     "SequenceTransformer",
+    "ActionAdapter",
+    "EncodedTrajectory",
+    "EnvTransition",
+    "GymnasiumEnvAdapter",
+    "MinariTrajectorySource",
+    "ObservationAdapter",
+    "OfflineTrajectorySource",
+    "SpaceSpec",
+    "StructuredEncoder",
+    "TrajectoryBatch",
+    "collate_trajectories",
+    "infer_space_spec",
     "build_model",
     "make_cnn_mlp",
     "make_mlp",
