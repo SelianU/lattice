@@ -15,7 +15,7 @@ class BaseLogger(ABC):
 
 
 class ConsoleLogger(BaseLogger):
-    """Prints episode metrics to stdout at a configurable interval."""
+    """Prints episode metrics to stdout every `log_interval` episodes (0 disables printing)."""
 
     def __init__(self, log_interval: int = 10, prefix: str = ""):
         self.log_interval = log_interval
@@ -28,7 +28,7 @@ class ConsoleLogger(BaseLogger):
         if len(self._recent_rewards) > 100:
             self._recent_rewards.pop(0)
 
-        if episode % self.log_interval == 0:
+        if self.log_interval > 0 and episode % self.log_interval == 0:
             parts = [f"{self.prefix}Ep {episode:4d}", f"Step {step:6d}"]
             parts.append(f"Reward {reward:8.2f}")
             parts.append(f"Mean(100) {np.mean(self._recent_rewards):8.2f}")

@@ -34,14 +34,25 @@ SUPERVISED_HOOK_NAMES = {
 
 @dataclass
 class RLTransition:
-    """One reinforcement learning transition."""
+    """
+    One reinforcement learning transition.
+
+    `terminated` means the episode reached a terminal state, so no future
+    reward follows. `truncated` means the episode was cut off (for example by a
+    time limit) while future reward still exists. `done` is true for either.
+    """
 
     state: Any
     action: Any
     reward: float
     next_state: Any
-    done: bool
+    terminated: bool
+    truncated: bool
     info: Dict[str, Any] = field(default_factory=dict)
+
+    @property
+    def done(self) -> bool:
+        return self.terminated or self.truncated
 
 
 @dataclass

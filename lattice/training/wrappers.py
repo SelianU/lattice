@@ -1,127 +1,84 @@
 """
-Environment wrappers that modify observations or rewards.
-All wrappers implement BaseEnv and can be stacked.
+Gymnasium reward wrappers.
+
+Both wrappers wrap a raw Gymnasium environment, so they stack with any other
+`gymnasium.Wrapper`. Wrap the result in `GymnasiumEnvAdapter` to train on it:
+
+    environment = GymnasiumEnvAdapter(
+        RewardNormalizationWrapper(gym.make("Pendulum-v1"), clip=10.0)
+    )
 """
+from typing import Optional
+
+import gymnasium as gym
 import numpy as np
 import torch
-from typing import Dict, Optional, Tuple, Union
-
-from .env_wrapper import BaseEnv
 
 
-class RewardNormalizationWrapper(BaseEnv):
+class RewardNormalizationWrapper(gym.RewardWrapper):
     """
     Normalises rewards online using Welford's running mean/variance.
 
     At each step the raw reward is divided by the running standard deviation
     (clipped to ±clip). Useful for continuous-control tasks (SAC on Pendulum,
     etc.) where reward scales vary widely across environments.
-
-    Usage
-    -----
-    env = GymEnvWrapper("Pendulum-v1")
-    env = RewardNormalizationWrapper(env, clip=10.0)
-    trainer = RLTrainer(agent, env, config, ...)
     """
 
-    def __init__(self, env: BaseEnv, clip: float = 10.0, epsilon: float = 1e-8):
-        self._env = env
+    def __init__(self, env: gym.Env, clip: float = 10.0, epsilon: float = 1e-8):
+        super().__init__(env)
         self._clip = clip
         self._epsilon = epsilon
         # Welford's online algorithm state
-        self._n = 0
+        self._count = 0
         self._mean = 0.0
         self._M2 = 0.0     # accumulated sum of squared deviations from mean
 
-    # ------------------------------------------------------------------ #
-    # Welford update                                                        #
-    # ------------------------------------------------------------------ #
-
-    def _normalise(self, reward: float) -> float:
-        self._n += 1
+    def reward(self, reward: float) -> float:
+        reward = float(reward)
+        self._count += 1
         delta = reward - self._mean
-        self._mean += delta / self._n
+        self._mean += delta / self._count
         self._M2 += delta * (reward - self._mean)
-        if self._n < 2:
+        if self._count < 2:
             return reward
-        std = (self._M2 / (self._n - 1)) ** 0.5
+        std = (self._M2 / (self._count - 1)) ** 0.5
         return float(np.clip(reward / (std + self._epsilon), -self._clip, self._clip))
 
-    # ------------------------------------------------------------------ #
-    # BaseEnv interface                                                     #
-    # ------------------------------------------------------------------ #
 
-    def reset(self) -> np.ndarray:
-        return self._env.reset()
-
-    def step(self, action) -> Tuple[np.ndarray, float, bool, Dict]:
-        obs, reward, done, info = self._env.step(action)
-        return obs, self._normalise(reward), done, info
-
-    def close(self):
-        self._env.close()
-
-    @property
-    def state_dim(self) -> Union[int, tuple]:
-        return self._env.state_dim
-
-    @property
-    def action_dim(self) -> int:
-        return self._env.action_dim
-
-    @property
-    def is_continuous(self) -> bool:
-        return self._env.is_continuous
-
-    # Forward optional properties (action bounds for SAC)
-    @property
-    def action_low(self):
-        return getattr(self._env, "action_low", None)
-
-    @property
-    def action_high(self):
-        return getattr(self._env, "action_high", None)
-
-
-class LearnedRewardWrapper(BaseEnv):
+class LearnedRewardWrapper(gym.Wrapper):
     """
     Replaces the environment's reward signal with a learned RewardModel.
 
     Used in D-REX, CLARE, and any reward-learning pipeline where the true
-    environment reward is unavailable at training time.
-
-    Usage
-    -----
-    env = GymEnvWrapper("CartPole-v1")
-    env = LearnedRewardWrapper(env, reward_model, device="cpu")
-    trainer = RLTrainer(agent, env, config)   # agent trains on learned reward
+    environment reward is unavailable at training time. The reward for a step
+    is computed from the observation the action was taken in.
 
     Parameters
     ----------
-    env          : Any BaseEnv implementation.
+    env          : Any Gymnasium environment.
     reward_model : Trained RewardModel (R(s) or R(s,a)).
     device       : Torch device for reward inference.
     """
 
-    def __init__(self, env: BaseEnv, reward_model, device: str = "cpu"):
-        self._env = env
+    def __init__(self, env: gym.Env, reward_model, device: str = "cpu"):
+        super().__init__(env)
         self._reward_model = reward_model
         self._device = torch.device(device)
         self._reward_model.to(self._device)
         self._reward_model.eval()
-        self._last_state: Optional[np.ndarray] = None
+        self._last_observation: Optional[np.ndarray] = None
 
-    def reset(self) -> np.ndarray:
-        obs = self._env.reset()
-        self._last_state = obs
-        return obs
+    def reset(self, **kwargs):
+        observation, info = self.env.reset(**kwargs)
+        self._last_observation = observation
+        return observation, info
 
-    def step(self, action) -> Tuple[np.ndarray, float, bool, Dict]:
-        obs, _, done, info = self._env.step(action)
+    def step(self, action):
+        observation, _, terminated, truncated, info = self.env.step(action)
 
         with torch.no_grad():
             state_t = torch.from_numpy(
-                np.array(self._last_state, dtype=np.float32)
+                np.array(self._last_observation, dtype=np.float32)
             ).unsqueeze(0).to(self._device)
 
             if self._reward_model.uses_action:
@@ -132,28 +89,5 @@ class LearnedRewardWrapper(BaseEnv):
             else:
                 reward = self._reward_model(state_t).item()
 
-        self._last_state = obs
-        return obs, reward, done, info
-
-    def close(self):
-        self._env.close()
-
-    @property
-    def state_dim(self) -> Union[int, tuple]:
-        return self._env.state_dim
-
-    @property
-    def action_dim(self) -> int:
-        return self._env.action_dim
-
-    @property
-    def is_continuous(self) -> bool:
-        return self._env.is_continuous
-
-    @property
-    def action_low(self):
-        return getattr(self._env, "action_low", None)
-
-    @property
-    def action_high(self):
-        return getattr(self._env, "action_high", None)
+        self._last_observation = observation
+        return observation, reward, terminated, truncated, info

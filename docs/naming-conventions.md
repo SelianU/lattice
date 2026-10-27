@@ -58,7 +58,9 @@ lattice/algorithms/
   - `*Agent`: algorithm implementations, such as `DQNAgent`.
   - `*Config`: algorithm configuration dataclasses, such as `PPOConfig`.
   - `*Buffer`: replay or rollout storage, such as `ReplayBuffer`.
-  - `*Wrapper`: environment or reward wrappers, such as `GymEnvWrapper`.
+  - `*Wrapper`: `gymnasium.Wrapper` subclasses, such as `RewardNormalizationWrapper`.
+  - `*Adapter`: converters between an outside interface and lattice, such as
+    `GymnasiumEnvAdapter` or `ObservationAdapter`.
   - `*Logger`: logging implementations, such as `ConsoleLogger`.
   - `*Backbone`: feature extractors without an output layer, such as `MLPBackbone`.
     The matching `make_*` helper adds the output layer: `make_mlp` returns
@@ -205,8 +207,8 @@ users how to think about the project.
 Good:
 
 ```python
-environment = GymEnvWrapper(config.env_name)
-state_dim = environment.state_dim
+environment = make_gymnasium_environment(config.env_name)
+state_dim = environment.observation_shape[0]
 action_dim = environment.action_dim
 q_network = QNetwork(backbone, QHead(backbone.output_dim, action_dim))
 ```
@@ -214,8 +216,8 @@ q_network = QNetwork(backbone, QHead(backbone.output_dim, action_dim))
 Avoid:
 
 ```python
-env = GymEnvWrapper(config.env_name)
-s_dim = env.state_dim
+env = make_gymnasium_environment(config.env_name)
+s_dim = env.observation_shape[0]
 a_dim = env.action_dim
 q_net = QNetwork(bb, QHead(bb.output_dim, a_dim))
 ```

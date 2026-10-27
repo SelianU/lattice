@@ -26,8 +26,8 @@ class ExperimentBuilder:
 
         environment = self._build_env(spec.get("env", {}), algorithm)
         algorithm_config = self._build_config(algorithm, environment, spec.get("config", {}))
-        state_shape = environment.state_dim if isinstance(environment.state_dim, tuple) else (environment.state_dim,)
-        state_dim = environment.state_dim if isinstance(environment.state_dim, int) else None
+        state_shape = environment.observation_shape
+        state_dim = state_shape[0] if len(state_shape) == 1 else None
         context = AgentBuildContext(
             algorithm=algorithm,
             action_dim=environment.action_dim,
@@ -35,8 +35,8 @@ class ExperimentBuilder:
             state_dim=state_dim,
             input_shape=state_shape,
             is_continuous=environment.is_continuous,
-            action_low=getattr(environment, "action_low", -1.0) or -1.0,
-            action_high=getattr(environment, "action_high", 1.0) or 1.0,
+            action_low=-1.0 if environment.action_low is None else environment.action_low,
+            action_high=1.0 if environment.action_high is None else environment.action_high,
         )
         logger = self._build_logger(spec.get("logger"), algorithm_config, spec.get("plot_path"))
 
@@ -56,13 +56,12 @@ class ExperimentBuilder:
         env_name = env_spec.pop("name", None) or self._default_env_name(algorithm)
 
         if env_type == "gym":
-            return self.registry.build_env(env_type, env_name=env_name, **env_spec)
+            return self.registry.build_env(env_type, environment_id=env_name, **env_spec)
         return self.registry.build_env(env_type, **env_spec)
 
     def _build_config(self, algorithm: str, env, config_spec: Dict[str, Any]):
         config_spec = dict(config_spec)
-        gym_env = getattr(env, "_env", None)
-        default_name = getattr(getattr(gym_env, "spec", None), "id", None)
+        default_name = getattr(getattr(env.env, "spec", None), "id", None)
         config_spec.setdefault("env_name", default_name or self._default_env_name(algorithm))
         return self.registry.build_config(algorithm, **config_spec)
 

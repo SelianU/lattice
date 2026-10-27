@@ -1,14 +1,16 @@
+from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, Optional, Tuple, Union
 
 import numpy as np
 
+from .gymnasium_adapter import EnvTransition
 from .hooks import HookManager, HookSpec, RLHookContext, RLTransition, RL_HOOK_NAMES
 
 
 TransitionResult = Union[
-    Tuple[np.ndarray, float, bool],
-    Tuple[np.ndarray, float, bool, Dict[str, Any]],
+    EnvTransition,
+    Tuple[np.ndarray, float, bool, bool, Dict[str, Any]],
 ]
 TransitionFunction = Callable[[Any], TransitionResult]
 
@@ -17,10 +19,7 @@ TransitionFunction = Callable[[Any], TransitionResult]
 class InteractionStep:
     """Result from one external interaction plus optional agent update."""
 
-    action: Any
-    next_state: np.ndarray
-    reward: float
-    done: bool
+    transition: RLTransition
     metrics: Dict[str, float]
 
 
@@ -37,7 +36,8 @@ def run_interaction_step(
     Run one state -> action -> external transition -> observe/update step.
 
     The transition_function owns the outside world. It receives the action and
-    returns (next_state, reward, done).
+    returns an `EnvTransition` or a Gymnasium-style
+    `(next_state, reward, terminated, truncated, info)` tuple.
     """
     hook_manager = HookManager(hooks, allowed_names=RL_HOOK_NAMES)
     hook_context = context or RLHookContext(
@@ -46,46 +46,65 @@ def run_interaction_step(
         config=getattr(agent, "config", None),
         evaluation=evaluation,
     )
+    return _run_interaction(
+        agent=agent,
+        state=state,
+        transition_function=transition_function,
+        hooks=hook_manager,
+        context=hook_context,
+        evaluation=evaluation,
+        update=update,
+    )
 
-    processed_state = hook_manager.transform("process_state", state, context=hook_context)
-    custom_action = hook_manager.first(
+
+def _run_interaction(
+    agent,
+    state: np.ndarray,
+    transition_function: TransitionFunction,
+    hooks: HookManager,
+    context: RLHookContext,
+    evaluation: bool,
+    update: bool,
+) -> InteractionStep:
+    processed_state = hooks.transform("process_state", state, context=context)
+    custom_action = hooks.first(
         "select_action",
         agent=agent,
         state=processed_state,
-        context=hook_context,
+        context=context,
     )
     action = custom_action if custom_action is not None else agent.select_action(
         processed_state,
         evaluation=evaluation,
     )
-    action = hook_manager.transform("process_action", action, context=hook_context)
-    next_state, reward, done, info = _unpack_transition_result(transition_function(action))
-    next_state = hook_manager.transform(
+    action = hooks.transform("process_action", action, context=context)
+    environment_transition = _to_env_transition(transition_function(action))
+    next_state = hooks.transform(
         "process_next_state",
-        next_state,
+        environment_transition.observation,
         state=processed_state,
         action=action,
-        context=hook_context,
+        context=context,
     )
     transition = RLTransition(
         state=processed_state,
         action=action,
-        reward=reward,
+        reward=environment_transition.reward,
         next_state=next_state,
-        done=done,
-        info=info,
+        terminated=environment_transition.terminated,
+        truncated=environment_transition.truncated,
+        info=dict(environment_transition.info),
     )
-    reward = hook_manager.transform(
+    transition.reward = hooks.transform(
         "process_reward",
-        reward,
+        transition.reward,
         transition=transition,
-        context=hook_context,
+        context=context,
     )
-    transition.reward = reward
 
     metrics = {}
     if not evaluation:
-        hook_manager.run("on_transition", transition=transition, context=hook_context)
+        hooks.run("on_transition", transition=transition, context=context)
         agent.observe(
             transition.state,
             transition.action,
@@ -94,28 +113,29 @@ def run_interaction_step(
             transition.done,
         )
         if update:
-            hook_manager.run("before_update", agent=agent, context=hook_context)
+            hooks.run("before_update", agent=agent, context=context)
             metrics = agent.update()
-            hook_context.metrics = metrics
-            hook_manager.run("after_update", metrics=metrics, context=hook_context)
+            context.metrics = metrics
+            hooks.run("after_update", metrics=metrics, context=context)
 
-    return InteractionStep(
-        action=action,
-        next_state=next_state,
-        reward=reward,
-        done=done,
-        metrics=metrics,
-    )
+    return InteractionStep(transition=transition, metrics=metrics)
 
 
-def _unpack_transition_result(result: TransitionResult) -> Tuple[np.ndarray, float, bool, Dict[str, Any]]:
-    if len(result) == 3:
-        next_state, reward, done = result
-        return next_state, float(reward), bool(done), {}
-    if len(result) == 4:
-        next_state, reward, done, info = result
-        return next_state, float(reward), bool(done), dict(info)
+def _to_env_transition(result: TransitionResult) -> EnvTransition:
+    if isinstance(result, EnvTransition):
+        return result
+    if isinstance(result, tuple) and len(result) == 5:
+        next_state, reward, terminated, truncated, info = result
+        if not isinstance(info, Mapping):
+            raise TypeError("transition info must be a mapping")
+        return EnvTransition(
+            observation=next_state,
+            reward=float(reward),
+            terminated=bool(terminated),
+            truncated=bool(truncated),
+            info=info,
+        )
     raise ValueError(
-        "transition_function must return (next_state, reward, done) "
-        "or (next_state, reward, done, info)."
+        "transition_function must return an EnvTransition or "
+        "(next_state, reward, terminated, truncated, info)."
     )

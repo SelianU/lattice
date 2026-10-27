@@ -187,6 +187,23 @@ from lattice import quick_dqn
 quick_dqn("CartPole-v1").train()
 ```
 
+`RLTrainer` talks to environments through `GymnasiumEnvAdapter`, which wraps
+any object with the Gymnasium `reset`/`step` API and `observation_space` /
+`action_space`. Box observations keep their shape (images stay
+`(channels, height, width)`); Dict, Tuple, and Discrete observations become one
+flat vector. Use regular `gymnasium.Wrapper`s for preprocessing, then wrap the
+result:
+
+```python
+import gymnasium as gym
+
+from lattice.training import GymnasiumEnvAdapter, RewardNormalizationWrapper
+
+environment = GymnasiumEnvAdapter(
+    RewardNormalizationWrapper(gym.make("Pendulum-v1"), clip=10.0)
+)
+```
+
 If your environment loop lives outside `lattice`, create only the agent:
 
 ```python

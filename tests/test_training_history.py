@@ -1,6 +1,6 @@
 import numpy as np
 
-from lattice.training import RLTrainer, SupervisedTrainingHistory
+from lattice.training import EnvTransition, RLTrainer, SupervisedTrainingHistory
 from lattice.training.history import RLTrainingHistory
 
 
@@ -24,10 +24,16 @@ class DummyAgent:
 
 class DummyEnvironment:
     def reset(self):
-        return np.array([0.0], dtype=np.float32)
+        return np.array([0.0], dtype=np.float32), {}
 
     def step(self, action):
-        return np.array([1.0], dtype=np.float32), 1.0, True, {}
+        return EnvTransition(
+            observation=np.array([1.0], dtype=np.float32),
+            reward=1.0,
+            terminated=True,
+            truncated=False,
+            info={},
+        )
 
     def close(self):
         return None

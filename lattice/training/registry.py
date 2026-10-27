@@ -14,7 +14,7 @@ from lattice.algorithms.config import DQNConfig, SACConfig, PPOConfig, TD3Config
 from lattice.algorithms.buffers import ReplayBuffer, SequenceReplayBuffer, PrioritizedReplayBuffer, RolloutBuffer
 from lattice.algorithms.models import QNetwork, SACActor, SACCritic
 from lattice.algorithms.agents import DQNAgent, SACAgent, PPOAgent, TD3Agent
-from lattice.training.env_wrapper import GymEnvWrapper, CustomEnvWrapper
+from lattice.training.gymnasium_adapter import GymnasiumEnvAdapter, make_gymnasium_environment
 from lattice.training.logger import ConsoleLogger, MatplotlibLogger, CompositeLogger
 
 
@@ -83,8 +83,8 @@ class Registry:
     }
 
     _envs: Dict[str, type] = {
-        "gym": GymEnvWrapper,
-        "custom": CustomEnvWrapper,
+        "gym": make_gymnasium_environment,
+        "custom": GymnasiumEnvAdapter,
     }
 
     _loggers: Dict[str, type] = {

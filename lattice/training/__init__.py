@@ -1,5 +1,4 @@
-from .env_wrapper import BaseEnv, GymEnvWrapper, CustomEnvWrapper
-from .gymnasium_adapter import EnvTransition, GymnasiumEnvAdapter
+from .gymnasium_adapter import EnvTransition, GymnasiumEnvAdapter, make_gymnasium_environment
 from .logger import BaseLogger, ConsoleLogger, MatplotlibLogger, CompositeLogger
 from .registry import Registry
 from .history import MetricHistory, RLTrainingHistory
@@ -35,8 +34,7 @@ from .factory import quick_dqn, quick_sac, quick_ppo, quick_td3
 
 __all__ = [
     # Environment
-    "BaseEnv", "GymEnvWrapper", "CustomEnvWrapper",
-    "EnvTransition", "GymnasiumEnvAdapter",
+    "EnvTransition", "GymnasiumEnvAdapter", "make_gymnasium_environment",
     # Logging
     "BaseLogger", "ConsoleLogger", "MatplotlibLogger", "CompositeLogger",
     # Registry
