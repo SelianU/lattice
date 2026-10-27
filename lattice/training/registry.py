@@ -82,7 +82,7 @@ class Registry:
         "rollout": RolloutBuffer,
     }
 
-    _envs: Dict[str, type] = {
+    _environments: Dict[str, type] = {
         "gym": make_gymnasium_environment,
         "custom": GymnasiumEnvAdapter,
     }
@@ -128,8 +128,8 @@ class Registry:
         cls._buffers[name] = buffer_cls
 
     @classmethod
-    def register_env(cls, name: str, env_cls: type) -> None:
-        cls._envs[name] = env_cls
+    def register_environment(cls, name: str, environment_factory: type) -> None:
+        cls._environments[name] = environment_factory
 
     @classmethod
     def register_logger(cls, name: str, logger_cls: type) -> None:
@@ -190,10 +190,10 @@ class Registry:
         return cls._buffers[name](**kwargs)
 
     @classmethod
-    def build_env(cls, name: str, **kwargs):
-        if name not in cls._envs:
-            raise KeyError(f"Env '{name}' not found. Available: {list(cls._envs)}")
-        return cls._envs[name](**kwargs)
+    def build_environment(cls, name: str, **kwargs):
+        if name not in cls._environments:
+            raise KeyError(f"Environment '{name}' not found. Available: {list(cls._environments)}")
+        return cls._environments[name](**kwargs)
 
     @classmethod
     def build_logger(cls, name: str, **kwargs):
@@ -276,8 +276,8 @@ class Registry:
         return list(cls._buffers)
 
     @classmethod
-    def list_envs(cls) -> list:
-        return list(cls._envs)
+    def list_environments(cls) -> list:
+        return list(cls._environments)
 
     @classmethod
     def list_loggers(cls) -> list:

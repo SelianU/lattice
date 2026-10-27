@@ -6,7 +6,7 @@ from typing import Optional
 @dataclass
 class DQNConfig:
     # Environment
-    env_name: str = "CartPole-v1"
+    environment_name: str = "CartPole-v1"
 
     # Optimization
     total_timesteps: int = 50000
@@ -60,7 +60,7 @@ class DQNConfig:
 @dataclass
 class SACConfig:
     # Environment
-    env_name: str = "Pendulum-v1"
+    environment_name: str = "Pendulum-v1"
 
     # Optimization
     total_timesteps: int = 50000
@@ -108,7 +108,7 @@ class SACConfig:
 @dataclass
 class PPOConfig:
     # Environment
-    env_name: str = "CartPole-v1"
+    environment_name: str = "CartPole-v1"
 
     # Rollout & optimization
     total_timesteps: int = 200_000
@@ -149,7 +149,7 @@ class PPOConfig:
 @dataclass
 class TD3Config:
     # Environment
-    env_name: str = "Pendulum-v1"
+    environment_name: str = "Pendulum-v1"
 
     # Optimization
     total_timesteps: int = 50_000

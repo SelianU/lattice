@@ -60,7 +60,7 @@ def test_rl_trainer_returns_history_object_with_common_helpers():
     logger = DummyLogger()
     trainer = RLTrainer(
         agent=DummyAgent(),
-        env=DummyEnvironment(),
+        environment=DummyEnvironment(),
         config=DummyConfig(),
         logger=logger,
     )

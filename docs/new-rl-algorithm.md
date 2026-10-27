@@ -114,7 +114,7 @@ from lattice.training import RLTrainer
 
 trainer = RLTrainer(
     agent=agent,
-    env=environment,
+    environment=environment,
     config=agent.config,
 )
 

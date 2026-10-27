@@ -37,14 +37,14 @@ class RLTrainer:
     def __init__(
         self,
         agent,
-        env: GymnasiumEnvAdapter,
+        environment: GymnasiumEnvAdapter,
         config,
         logger: Optional[BaseLogger] = None,
         save_path: Optional[str] = None,
         hooks: HookSpec = None,
     ):
         self.agent = agent
-        self.env = env
+        self.environment = environment
         self.config = config
         self.logger = logger or ConsoleLogger(
             log_interval=getattr(config, "log_interval", 10)
@@ -72,7 +72,7 @@ class RLTrainer:
 
         hook_context = RLHookContext(
             agent=self.agent,
-            environment=self.env,
+            environment=self.environment,
             config=self.config,
         )
         state = self._start_episode(hook_context)
@@ -84,7 +84,7 @@ class RLTrainer:
             step = _run_interaction(
                 agent=self.agent,
                 state=state,
-                transition_function=self.env.step,
+                transition_function=self.environment.step,
                 hooks=self.hooks,
                 context=hook_context,
                 evaluation=False,
@@ -121,7 +121,7 @@ class RLTrainer:
                 episode_reward = 0.0
                 step_buf = {}
 
-        self.env.close()
+        self.environment.close()
 
         if self.save_path:
             os.makedirs(os.path.dirname(self.save_path), exist_ok=True)
@@ -143,7 +143,7 @@ class RLTrainer:
         rewards = []
         hook_context = RLHookContext(
             agent=self.agent,
-            environment=self.env,
+            environment=self.environment,
             config=self.config,
             evaluation=True,
         )
@@ -156,7 +156,7 @@ class RLTrainer:
                 step = _run_interaction(
                     agent=self.agent,
                     state=state,
-                    transition_function=self.env.step,
+                    transition_function=self.environment.step,
                     hooks=self.hooks,
                     context=hook_context,
                     evaluation=True,
@@ -178,7 +178,7 @@ class RLTrainer:
     # ------------------------------------------------------------------ #
 
     def _start_episode(self, hook_context: RLHookContext):
-        state, _ = self.env.reset()
+        state, _ = self.environment.reset()
         self._maybe_reset_hidden()
         self.hooks.run("on_episode_start", state=state, context=hook_context)
         return state

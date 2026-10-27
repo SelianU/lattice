@@ -278,7 +278,7 @@ from lattice.training import build_trainer
 
 trainer = build_trainer({
     "algorithm": "dqn",
-    "env": {"type": "gym", "name": "CartPole-v1"},
+    "environment": {"type": "gym", "name": "CartPole-v1"},
     "model": {"backbone": {"type": "mlp", "hidden_dims": [128, 128]}},
     "config": {"total_timesteps": 30000, "learning_starts": 1000},
 })

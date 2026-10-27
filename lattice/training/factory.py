@@ -21,7 +21,7 @@ def _model_spec(backbone: str = "mlp", hidden_dims: Optional[List[int]] = None) 
 
 def _trainer_spec(
     algorithm: str,
-    env_name: str,
+    environment_name: str,
     hidden_dims: Optional[List[int]],
     save_path: Optional[str],
     plot_path: Optional[str],
@@ -31,7 +31,7 @@ def _trainer_spec(
 ) -> dict:
     trainer_spec = {
         "algorithm": algorithm,
-        "env": {"type": "gym", "name": env_name},
+        "environment": {"type": "gym", "name": environment_name},
         "model": _model_spec(backbone=backbone, hidden_dims=hidden_dims),
         "config": config_kwargs,
         "save_path": save_path,
@@ -43,7 +43,7 @@ def _trainer_spec(
 
 
 def quick_dqn(
-    env_name: str,
+    environment_name: str,
     backbone: str = "mlp",
     hidden_dims: Optional[List[int]] = None,
     save_path: Optional[str] = None,
@@ -57,7 +57,7 @@ def quick_dqn(
     return build_trainer(
         _trainer_spec(
             "dqn",
-            env_name,
+            environment_name,
             hidden_dims,
             save_path,
             plot_path,
@@ -69,7 +69,7 @@ def quick_dqn(
 
 
 def quick_sac(
-    env_name: str,
+    environment_name: str,
     hidden_dims: Optional[List[int]] = None,
     save_path: Optional[str] = None,
     plot_path: Optional[str] = None,
@@ -78,12 +78,12 @@ def quick_sac(
 ) -> RLTrainer:
     """Build and return an RLTrainer for a SAC experiment in one call."""
     return build_trainer(
-        _trainer_spec("sac", env_name, hidden_dims, save_path, plot_path, logger, config_kwargs)
+        _trainer_spec("sac", environment_name, hidden_dims, save_path, plot_path, logger, config_kwargs)
     )
 
 
 def quick_ppo(
-    env_name: str,
+    environment_name: str,
     hidden_dims: Optional[List[int]] = None,
     save_path: Optional[str] = None,
     plot_path: Optional[str] = None,
@@ -92,12 +92,12 @@ def quick_ppo(
 ) -> RLTrainer:
     """Build and return an RLTrainer for a PPO experiment in one call."""
     return build_trainer(
-        _trainer_spec("ppo", env_name, hidden_dims, save_path, plot_path, logger, config_kwargs)
+        _trainer_spec("ppo", environment_name, hidden_dims, save_path, plot_path, logger, config_kwargs)
     )
 
 
 def quick_td3(
-    env_name: str,
+    environment_name: str,
     hidden_dims: Optional[List[int]] = None,
     save_path: Optional[str] = None,
     plot_path: Optional[str] = None,
@@ -106,5 +106,5 @@ def quick_td3(
 ) -> RLTrainer:
     """Build and return an RLTrainer for a TD3 experiment in one call."""
     return build_trainer(
-        _trainer_spec("td3", env_name, hidden_dims, save_path, plot_path, logger, config_kwargs)
+        _trainer_spec("td3", environment_name, hidden_dims, save_path, plot_path, logger, config_kwargs)
     )

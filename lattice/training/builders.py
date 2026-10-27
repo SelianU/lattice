@@ -24,7 +24,7 @@ class ExperimentBuilder:
                 f"Algorithm '{algorithm}' not found. Available: {self.registry.list_configs()}"
             )
 
-        environment = self._build_env(spec.get("env", {}), algorithm)
+        environment = self._build_environment(spec.get("environment", {}), algorithm)
         algorithm_config = self._build_config(algorithm, environment, spec.get("config", {}))
         state_shape = environment.observation_shape
         state_dim = state_shape[0] if len(state_shape) == 1 else None
@@ -50,19 +50,21 @@ class ExperimentBuilder:
             hooks=spec.get("hooks"),
         )
 
-    def _build_env(self, env_spec: Dict[str, Any], algorithm: str):
-        env_spec = dict(env_spec)
-        env_type = env_spec.pop("type", "gym")
-        env_name = env_spec.pop("name", None) or self._default_env_name(algorithm)
+    def _build_environment(self, environment_spec: Dict[str, Any], algorithm: str):
+        environment_spec = dict(environment_spec)
+        environment_type = environment_spec.pop("type", "gym")
+        environment_name = environment_spec.pop("name", None) or self._default_environment_name(algorithm)
 
-        if env_type == "gym":
-            return self.registry.build_env(env_type, environment_id=env_name, **env_spec)
-        return self.registry.build_env(env_type, **env_spec)
+        if environment_type == "gym":
+            return self.registry.build_environment(
+                environment_type, environment_id=environment_name, **environment_spec
+            )
+        return self.registry.build_environment(environment_type, **environment_spec)
 
-    def _build_config(self, algorithm: str, env, config_spec: Dict[str, Any]):
+    def _build_config(self, algorithm: str, environment, config_spec: Dict[str, Any]):
         config_spec = dict(config_spec)
-        default_name = getattr(getattr(env.env, "spec", None), "id", None)
-        config_spec.setdefault("env_name", default_name or self._default_env_name(algorithm))
+        default_name = getattr(getattr(environment.env, "spec", None), "id", None)
+        config_spec.setdefault("environment_name", default_name or self._default_environment_name(algorithm))
         return self.registry.build_config(algorithm, **config_spec)
 
     def _build_logger(
@@ -90,7 +92,7 @@ class ExperimentBuilder:
         return self.registry.build_logger(logger_type, **logger_spec)
 
     @staticmethod
-    def _default_env_name(algorithm: str) -> str:
+    def _default_environment_name(algorithm: str) -> str:
         return {
             "dqn": "CartPole-v1",
             "ppo": "CartPole-v1",

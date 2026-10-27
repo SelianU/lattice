@@ -56,9 +56,9 @@ class AgentBuilder:
 
     def _build_config(self, algorithm: str, config_spec: Dict[str, Any]):
         config_spec = dict(config_spec)
-        default_env_name = self._default_env_name(algorithm)
-        if default_env_name is not None:
-            config_spec.setdefault("env_name", default_env_name)
+        default_environment_name = self._default_environment_name(algorithm)
+        if default_environment_name is not None:
+            config_spec.setdefault("environment_name", default_environment_name)
         return self.registry.build_config(algorithm, **config_spec)
 
     def _build_algorithm_builder(self, algorithm: str):
@@ -99,7 +99,7 @@ class AgentBuilder:
         )
 
     @staticmethod
-    def _default_env_name(algorithm: str) -> str:
+    def _default_environment_name(algorithm: str) -> str:
         return {
             "dqn": "CartPole-v1",
             "ppo": "CartPole-v1",

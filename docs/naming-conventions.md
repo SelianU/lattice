@@ -108,7 +108,7 @@ Preferred names:
 
 | Avoid | Prefer |
 |---|---|
-| `env` | `environment` |
+| `env` | `environment` (keep `env` only for a raw Gymnasium env, as in `gymnasium.Wrapper(env)`) |
 | `ctx` | `context` |
 | `cfg` | `config`, `config_dict`, `backbone_config` |
 | `bb` | `backbone` |
@@ -207,7 +207,7 @@ users how to think about the project.
 Good:
 
 ```python
-environment = make_gymnasium_environment(config.env_name)
+environment = make_gymnasium_environment(config.environment_name)
 state_dim = environment.observation_shape[0]
 action_dim = environment.action_dim
 q_network = QNetwork(backbone, QHead(backbone.output_dim, action_dim))

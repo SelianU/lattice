@@ -190,13 +190,13 @@ def test_build_trainer_runs_on_gymnasium_environments(algorithm, environment_nam
 
     trainer = build_trainer({
         "algorithm": algorithm,
-        "env": {"type": "gym", "name": environment_name},
+        "environment": {"type": "gym", "name": environment_name},
         "model": {"backbone": {"type": "mlp", "hidden_dims": [8]}},
         "config": config,
     })
 
     history = trainer.train()
 
-    assert isinstance(trainer.env, GymnasiumEnvAdapter)
+    assert isinstance(trainer.environment, GymnasiumEnvAdapter)
     assert trainer.evaluate(num_episodes=1)["mean_reward"] <= 500
     assert history is not None
