@@ -44,4 +44,5 @@ def test_networks_all_lists_only_importable_names():
     import lattice.networks as networks
 
     assert all(hasattr(networks, name) for name in networks.__all__)
-    assert {"make_mlp", "MLP", "SequenceTransformer"} <= set(networks.__all__)
+    assert {"make_mlp", "MLPBackbone", "MaskedSequenceTransformer"} <= set(networks.__all__)
+    assert not {"MLP", "CNN", "RNN", "Transformer", "SequenceTransformer"} & set(networks.__all__)

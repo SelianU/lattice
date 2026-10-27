@@ -4,7 +4,7 @@ from typing import Any, Dict
 import torch.nn as nn
 
 from lattice.networks import QHead
-from lattice.networks.encoders import MLP, RNN
+from lattice.networks.encoders import MLPBackbone, RNNBackbone
 
 from ..agent_context import AgentBuildContext
 from ..agents import DQNAgent
@@ -122,20 +122,20 @@ class DQNAgentBuilder(BaseAgentBuilder):
     def _build_mlp_backbones(self, context: AgentBuildContext, hidden_dims):
         input_dim = self._require_state_dim(context, "mlp")
         return (
-            MLP(input_dim=input_dim, hidden_dims=hidden_dims),
-            MLP(input_dim=input_dim, hidden_dims=hidden_dims),
+            MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims),
+            MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims),
         )
 
     def _build_rnn_backbones(self, context: AgentBuildContext, hidden_dims):
         input_dim = self._require_state_dim(context, "rnn")
         return (
-            RNN(
-                base_backbone=MLP(input_dim=input_dim, hidden_dims=hidden_dims),
+            RNNBackbone(
+                base_backbone=MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims),
                 rnn_type="LSTM",
                 rnn_hidden_dim=hidden_dims[-1],
             ),
-            RNN(
-                base_backbone=MLP(input_dim=input_dim, hidden_dims=hidden_dims),
+            RNNBackbone(
+                base_backbone=MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims),
                 rnn_type="LSTM",
                 rnn_hidden_dim=hidden_dims[-1],
             ),

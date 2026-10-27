@@ -4,7 +4,7 @@ import torch.nn.functional as F
 from typing import List, Tuple
 
 from .models import RewardModel
-from .datasets import DemonstrationBuffer, Trajectory
+from .datasets import DemonstrationBuffer, RankedDemonstration
 
 
 class RewardModelTrainer:
@@ -43,7 +43,7 @@ class RewardModelTrainer:
     # Core loss                                                            #
     # ------------------------------------------------------------------ #
 
-    def _to_tensors(self, traj: Trajectory) -> Tuple[torch.Tensor, torch.Tensor]:
+    def _to_tensors(self, traj: RankedDemonstration) -> Tuple[torch.Tensor, torch.Tensor]:
         states = torch.from_numpy(traj.states).to(self.device)
         if traj.actions.dtype in (np.int32, np.int64):
             actions = torch.from_numpy(traj.actions.astype(np.float32)).to(self.device)
@@ -52,7 +52,7 @@ class RewardModelTrainer:
         return states, actions
 
     def preference_loss(
-        self, better: Trajectory, worse: Trajectory
+        self, better: RankedDemonstration, worse: RankedDemonstration
     ) -> torch.Tensor:
         """Bradley-Terry loss for one (better, worse) pair."""
         s1, a1 = self._to_tensors(better)

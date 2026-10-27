@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from typing import List, Type
 
-class MLP(nn.Module):
+class MLPBackbone(nn.Module):
     """
     Multi-Layer Perceptron (MLP) backbone.
     Maps a flat input vector to a feature vector.

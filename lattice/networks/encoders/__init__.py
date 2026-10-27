@@ -1,7 +1,7 @@
-from .mlp import MLP
-from .cnn import CNN
-from .rnn import RNN
+from .mlp import MLPBackbone
+from .cnn import CNNBackbone
+from .rnn import RNNBackbone
 from .structured import StructuredEncoder
-from .transformer import Transformer
+from .transformer import TransformerBackbone
 
-__all__ = ["CNN", "MLP", "RNN", "StructuredEncoder", "Transformer"]
+__all__ = ["CNNBackbone", "MLPBackbone", "RNNBackbone", "StructuredEncoder", "TransformerBackbone"]

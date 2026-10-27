@@ -5,7 +5,7 @@ from typing import Dict, List, Tuple
 
 
 @dataclass
-class Trajectory:
+class RankedDemonstration:
     """A single demonstration trajectory with a quality rank."""
     states: np.ndarray      # (T, state_dim)  float32
     actions: np.ndarray     # (T,) int64  or  (T, action_dim) float32
@@ -31,7 +31,7 @@ class DemonstrationBuffer:
     """
 
     def __init__(self):
-        self._trajectories: List[Trajectory] = []
+        self._trajectories: List[RankedDemonstration] = []
 
     def add_trajectory(
         self,
@@ -40,7 +40,7 @@ class DemonstrationBuffer:
         rank: int,
     ) -> None:
         self._trajectories.append(
-            Trajectory(
+            RankedDemonstration(
                 states=np.asarray(states, dtype=np.float32),
                 actions=np.asarray(actions),
                 rank=rank,
@@ -49,7 +49,7 @@ class DemonstrationBuffer:
 
     def sample_preference_pairs(
         self, num_pairs: int
-    ) -> List[Tuple[Trajectory, Trajectory]]:
+    ) -> List[Tuple[RankedDemonstration, RankedDemonstration]]:
         """
         Sample (better, worse) pairs with strictly different ranks.
         Returns up to num_pairs pairs (may return fewer if data is insufficient).
@@ -58,7 +58,7 @@ class DemonstrationBuffer:
         if len(trajectories) < 2:
             raise ValueError("Need at least 2 trajectories to form preference pairs.")
 
-        pairs: List[Tuple[Trajectory, Trajectory]] = []
+        pairs: List[Tuple[RankedDemonstration, RankedDemonstration]] = []
         max_attempts = num_pairs * 20
         attempts = 0
 

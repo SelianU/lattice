@@ -2,7 +2,7 @@ from typing import List
 
 import torch.nn as nn
 
-from .encoders import MLP, RNN, Transformer
+from .encoders import MLPBackbone, RNNBackbone, TransformerBackbone
 
 
 class _SequenceOutputModel(nn.Module):
@@ -37,8 +37,8 @@ def make_rnn(
     RNN backbone directly if hidden states are needed.
     """
     hidden_dims = [64] if hidden_dims is None else hidden_dims
-    base_backbone = MLP(input_dim=input_dim, hidden_dims=hidden_dims, activation=activation)
-    recurrent_backbone = RNN(
+    base_backbone = MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims, activation=activation)
+    recurrent_backbone = RNNBackbone(
         base_backbone=base_backbone,
         rnn_type=rnn_type,
         rnn_hidden_dim=rnn_hidden_dim,
@@ -64,8 +64,8 @@ def make_transformer(
     Accepts either (batch, input_dim) or (batch, sequence, input_dim).
     """
     hidden_dims = [64] if hidden_dims is None else hidden_dims
-    base_backbone = MLP(input_dim=input_dim, hidden_dims=hidden_dims, activation=activation)
-    transformer_backbone = Transformer(
+    base_backbone = MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims, activation=activation)
+    transformer_backbone = TransformerBackbone(
         base_backbone=base_backbone,
         num_heads=num_heads,
         num_layers=num_layers,

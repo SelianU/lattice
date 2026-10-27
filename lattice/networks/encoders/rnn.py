@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from typing import Tuple, Optional, Union
 
-from .mlp import MLP
-from .cnn import CNN
+from .mlp import MLPBackbone
+from .cnn import CNNBackbone
 
-class RNN(nn.Module):
+class RNNBackbone(nn.Module):
     """
     Recurrent Neural Network (RNN) backbone wrapper.
     Passes input observations through an underlying base backbone (MLP/CNN),
@@ -50,8 +50,8 @@ class RNN(nn.Module):
         """
         # Distinguish if input has a sequence dimension
         has_seq_dim = False
-        if (isinstance(self.base_backbone, MLP) and x.dim() == 3) or \
-           (isinstance(self.base_backbone, CNN) and x.dim() == 5):
+        if (isinstance(self.base_backbone, MLPBackbone) and x.dim() == 3) or \
+           (isinstance(self.base_backbone, CNNBackbone) and x.dim() == 5):
             has_seq_dim = True
             
         if not has_seq_dim:

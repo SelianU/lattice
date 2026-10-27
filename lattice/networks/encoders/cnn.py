@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from typing import List, Tuple, Type
 
-class CNN(nn.Module):
+class CNNBackbone(nn.Module):
     """
     Convolutional Neural Network (CNN) backbone for spatial (image) observations.
     """

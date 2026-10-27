@@ -1,6 +1,6 @@
 from typing import Any, Dict, Optional, Tuple
 
-from lattice.networks.encoders import CNN, MLP, Transformer
+from lattice.networks.encoders import CNNBackbone, MLPBackbone, TransformerBackbone
 
 from ..agent_context import AgentBuildContext
 
@@ -22,7 +22,7 @@ class BaseAgentBuilder:
         if backbone_type == "cnn":
             backbone_spec.pop("hidden_dims", None)
             backbone_spec.setdefault("input_shape", self._require_input_shape(context, "cnn", rank=3))
-            return CNN(**backbone_spec)
+            return CNNBackbone(**backbone_spec)
 
         if backbone_type == "transformer":
             backbone_spec.pop("hidden_dims", None)
@@ -37,7 +37,7 @@ class BaseAgentBuilder:
         context: AgentBuildContext,
         backbone_spec: Dict[str, Any],
         hidden_dims,
-    ) -> Transformer:
+    ) -> TransformerBackbone:
         base_backbone_spec = dict(backbone_spec.pop("base_backbone", {}))
         input_shape = self._require_input_shape(context, "transformer")
 
@@ -55,7 +55,7 @@ class BaseAgentBuilder:
         if len(input_shape) >= 2:
             sequence_length = getattr(context.config, "sequence_length", 10)
             backbone_spec.setdefault("max_seq_len", max(input_shape[0], sequence_length))
-        return Transformer(base_backbone=base_backbone, **backbone_spec)
+        return TransformerBackbone(base_backbone=base_backbone, **backbone_spec)
 
     def _build_base_backbone(
         self,
@@ -70,21 +70,21 @@ class BaseAgentBuilder:
                     "Transformer with CNN base expects input_shape=(sequence_length, channels, height, width)."
                 )
             backbone_spec.setdefault("input_shape", input_shape[1:])
-            return CNN(**backbone_spec)
+            return CNNBackbone(**backbone_spec)
 
         if backbone_type == "mlp":
             input_dim = input_shape[-1] if len(input_shape) >= 2 else input_shape[0]
             backbone_spec.setdefault("input_dim", input_dim)
             backbone_spec.setdefault("hidden_dims", hidden_dims)
-            return MLP(**backbone_spec)
+            return MLPBackbone(**backbone_spec)
 
         return self.registry.build_backbone(backbone_type, **backbone_spec)
 
     def _default_transformer_base_backbone(self, input_shape: Tuple[int, ...], hidden_dims):
         if len(input_shape) == 2:
-            return MLP(input_dim=input_shape[1], hidden_dims=hidden_dims)
+            return MLPBackbone(input_dim=input_shape[1], hidden_dims=hidden_dims)
         if len(input_shape) == 4:
-            return CNN(input_shape=input_shape[1:])
+            return CNNBackbone(input_shape=input_shape[1:])
         raise ValueError(
             "Transformer expects input_shape=(sequence_length, feature_dim) "
             "or (sequence_length, channels, height, width)."
@@ -131,7 +131,7 @@ class BaseAgentBuilder:
 
     @staticmethod
     def _mlp(input_dim, hidden_dims):
-        return MLP(input_dim=input_dim, hidden_dims=hidden_dims)
+        return MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims)
 
     @staticmethod
     def _require_continuous(context: AgentBuildContext, algorithm: str) -> None:

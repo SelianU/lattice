@@ -3,7 +3,7 @@ from typing import Any, Dict, Type
 import torch
 import torch.nn as nn
 
-from lattice.networks.encoders import MLP, CNN, RNN, Transformer
+from lattice.networks.encoders import MLPBackbone, CNNBackbone, RNNBackbone, TransformerBackbone
 from lattice.networks import (
     QHead, DuelingQHead,
     GaussianPolicyHead, DiagonalGaussianHead, DeterministicPolicyHead,
@@ -42,10 +42,10 @@ class Registry:
     """
 
     _backbones: Dict[str, Type[nn.Module]] = {
-        "mlp": MLP,
-        "cnn": CNN,
-        "rnn": RNN,
-        "transformer": Transformer,
+        "mlp": MLPBackbone,
+        "cnn": CNNBackbone,
+        "rnn": RNNBackbone,
+        "transformer": TransformerBackbone,
     }
 
     _heads: Dict[str, Type[nn.Module]] = {

@@ -1,4 +1,4 @@
-from .encoders import MLP, CNN, RNN, Transformer
+from .encoders import MLPBackbone, CNNBackbone, RNNBackbone, TransformerBackbone
 from .heads import (
     QHead, DuelingQHead,
     GaussianPolicyHead, DiagonalGaussianHead, DeterministicPolicyHead,
@@ -13,11 +13,11 @@ from .builders import (
 )
 from .language_models import MiniGPT, make_mini_gpt
 from .sequence_builders import make_rnn, make_transformer
-from .sequence_transformer import SequenceTransformer
+from .masked_sequence_transformer import MaskedSequenceTransformer
 from .sequential import build_sequential_model
 
 __all__ = [
-    "MLP", "CNN", "RNN", "Transformer",
+    "MLPBackbone", "CNNBackbone", "RNNBackbone", "TransformerBackbone",
     "QHead", "DuelingQHead",
     "GaussianPolicyHead", "DiagonalGaussianHead", "DeterministicPolicyHead",
     "CategoricalPolicyHead",
@@ -25,6 +25,6 @@ __all__ = [
     "build_model", "make_cnn_mlp", "make_mlp", "make_mlp_classifier",
     "MiniGPT", "make_mini_gpt",
     "make_rnn", "make_transformer",
-    "SequenceTransformer",
+    "MaskedSequenceTransformer",
     "build_sequential_model",
 ]

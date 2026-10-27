@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 
 
-class SequenceTransformer(nn.Module):
+class MaskedSequenceTransformer(nn.Module):
     def __init__(
         self,
         embedding_dim,

@@ -4,7 +4,7 @@ from typing import Dict, List, Tuple
 
 import torch.nn as nn
 
-from .encoders import CNN, MLP
+from .encoders import CNNBackbone, MLPBackbone
 from .language_models import make_mini_gpt
 from .sequence_builders import make_rnn, make_transformer
 from .sequential import build_sequential_model
@@ -23,7 +23,7 @@ def make_mlp(
     for logits, regression values, or as a feature head.
     """
     hidden_dims = [64, 64] if hidden_dims is None else hidden_dims
-    encoder = MLP(input_dim=input_dim, hidden_dims=hidden_dims, activation=activation)
+    encoder = MLPBackbone(input_dim=input_dim, hidden_dims=hidden_dims, activation=activation)
     return nn.Sequential(encoder, nn.Linear(encoder.output_dim, output_dim))
 
 
@@ -73,7 +73,7 @@ def make_cnn_mlp(
     mlp_hidden_dims = [] if mlp_hidden_dims is None else mlp_hidden_dims
     num_convs = len(conv_channels)
 
-    cnn = CNN(
+    cnn = CNNBackbone(
         input_shape=input_shape,
         feature_dim=cnn_feature_dim,
         channels=conv_channels,

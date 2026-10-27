@@ -6,7 +6,7 @@ from lattice.networks import (
     QHead, GaussianPolicyHead, DoubleQCriticHead,
     CategoricalPolicyHead, DiagonalGaussianHead, DeterministicPolicyHead, ValueHead,
 )
-from lattice.networks.encoders import RNN, Transformer
+from lattice.networks.encoders import RNNBackbone, TransformerBackbone
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -30,10 +30,10 @@ class QNetwork(nn.Module):
         x: torch.Tensor,
         hx: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, Optional[Tuple]]]:
-        if isinstance(self.backbone, RNN):
+        if isinstance(self.backbone, RNNBackbone):
             features, next_hx = self.backbone(x, hx)
             return self.head(features), next_hx
-        elif isinstance(self.backbone, Transformer):
+        elif isinstance(self.backbone, TransformerBackbone):
             features = self.backbone(x)
             return self.head(features), None
         else:

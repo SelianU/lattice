@@ -24,8 +24,11 @@ Current core module layout:
 
 ```text
 lattice/networks/
+├── encoders/              # MLPBackbone, CNNBackbone, RNNBackbone, TransformerBackbone, StructuredEncoder
+├── heads.py               # QHead, ValueHead, policy heads
 ├── builders.py            # make_mlp, make_mlp_classifier, make_cnn_mlp, build_model
 ├── sequence_builders.py   # make_rnn, make_transformer
+├── masked_sequence_transformer.py  # MaskedSequenceTransformer
 ├── language_models.py     # MiniGPT, make_mini_gpt
 └── sequential.py          # build_sequential_model
 
@@ -57,6 +60,9 @@ lattice/algorithms/
   - `*Buffer`: replay or rollout storage, such as `ReplayBuffer`.
   - `*Wrapper`: environment or reward wrappers, such as `GymEnvWrapper`.
   - `*Logger`: logging implementations, such as `ConsoleLogger`.
+  - `*Backbone`: feature extractors without an output layer, such as `MLPBackbone`.
+    The matching `make_*` helper adds the output layer: `make_mlp` returns
+    `MLPBackbone` plus `nn.Linear`.
   - `*Head`: neural network output heads, such as `QHead`.
   - `*Trainer`: training loops, such as `RLTrainer` or `RewardModelTrainer`.
   - `*Builder`: object assembly helpers, such as `AgentBuilder` or `ExperimentBuilder`.
@@ -186,8 +192,8 @@ training_config = SupervisedTrainingConfig(epochs=10, learning_rate=1e-3)
 Examples:
 
 ```python
-actor_backbone = MLP(input_dim=state_dim, hidden_dims=[256, 256])
-critic_backbone = MLP(input_dim=state_dim, hidden_dims=[256, 256])
+actor_backbone = MLPBackbone(input_dim=state_dim, hidden_dims=[256, 256])
+critic_backbone = MLPBackbone(input_dim=state_dim, hidden_dims=[256, 256])
 target_q_network = QNetwork(target_backbone, QHead(target_backbone.output_dim, action_dim))
 ```
 

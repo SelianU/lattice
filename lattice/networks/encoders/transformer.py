@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from typing import Optional
 
-from .mlp import MLP
-from .cnn import CNN
+from .mlp import MLPBackbone
+from .cnn import CNNBackbone
 
-class Transformer(nn.Module):
+class TransformerBackbone(nn.Module):
     """
     Transformer-based backbone.
     Applies causal (masked) self-attention over a sequence of states/features.
@@ -54,8 +54,8 @@ class Transformer(nn.Module):
                - During action selection: (Batch, Observations...)
         """
         has_seq_dim = False
-        if (isinstance(self.base_backbone, MLP) and x.dim() == 3) or \
-           (isinstance(self.base_backbone, CNN) and x.dim() == 5):
+        if (isinstance(self.base_backbone, MLPBackbone) and x.dim() == 3) or \
+           (isinstance(self.base_backbone, CNNBackbone) and x.dim() == 5):
             has_seq_dim = True
             
         if not has_seq_dim:

@@ -1,12 +1,12 @@
 import pytest
 import torch
 
-from lattice import SequenceTransformer
+from lattice import MaskedSequenceTransformer
 
 
 def make_stack(causal):
     torch.manual_seed(3)
-    model = SequenceTransformer(
+    model = MaskedSequenceTransformer(
         embedding_dim=4,
         num_heads=2,
         num_layers=1,
