@@ -457,6 +457,10 @@ Advanced customization examples live in
 [`docs/advanced-customization.md`](docs/advanced-customization.md).
 New RL algorithm guidance lives in
 [`docs/new-rl-algorithm.md`](docs/new-rl-algorithm.md).
+How `lattice` stays compatible with plain PyTorch is described in
+[`docs/torch-interoperability.md`](docs/torch-interoperability.md).
+A runnable supervised MLP example lives in
+[`examples/train_supervised_mlp.py`](examples/train_supervised_mlp.py).
 
 ## Requirements
 
