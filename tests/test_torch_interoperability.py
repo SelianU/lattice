@@ -14,6 +14,7 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
 from lattice import (
+    evaluate_supervised_model,
     make_cnn_mlp,
     make_dqn_agent,
     make_mlp,
@@ -23,7 +24,6 @@ from lattice import (
     train_supervised_model,
 )
 from lattice.training import make_loss, make_optimizer
-from lattice.training.supervised_training import evaluate_supervised_model
 
 
 def _classification_loader():

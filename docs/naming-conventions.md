@@ -14,7 +14,8 @@ the reader to inspect the implementation.
   - `optimizers.py` instead of `optim.py`
   - `training_steps.py` instead of `steps.py`
   - `supervised_training.py` instead of `supervised.py`
-- Keep examples named by algorithm and model family:
+- Keep examples named by task or algorithm, then model family:
+  - `train_supervised_mlp.py`
   - `train_dqn_mlp.py`
   - `train_dqn_cnn.py`
   - `train_sac_mlp.py`
@@ -75,12 +76,19 @@ lattice/algorithms/
     - Example: `build_model`, `build_agent`, `build_trainer`, `build_q_network`
   - `quick_*`: shortcut helpers for common training setups.
     - Example: `quick_dqn`, `quick_sac`
-  - `register_*`: add a component to `Registry`.
-    - Example: `register_backbone`, `register_logger`
-  - `list_*`: return available registry keys.
-    - Example: `list_backbones`, `list_optimizers`
+  - `train_*`: run a full training loop.
+    - Example: `train_supervised_model`
+  - `evaluate_*`: compute metrics without updating the model.
+    - Example: `evaluate_supervised_model`
   - `run_*`: execute one explicit operation or step.
     - Example: `run_training_step`, `run_interaction_step`, `run_dqn_update`
+
+`Registry` class methods use two more prefixes:
+
+- `register_*`: add a component to `Registry`.
+  - Example: `Registry.register_backbone`, `Registry.register_logger`
+- `list_*`: return available registry keys.
+  - Example: `Registry.list_backbones`, `Registry.list_optimizers`
 
 ## Variables
 

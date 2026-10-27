@@ -11,8 +11,12 @@ import math
 import torch
 from torch.utils.data import DataLoader, TensorDataset, random_split
 
-from lattice import SupervisedTrainingConfig, make_mlp, train_supervised_model
-from lattice.training.supervised_training import evaluate_supervised_model
+from lattice import (
+    SupervisedTrainingConfig,
+    evaluate_supervised_model,
+    make_mlp,
+    train_supervised_model,
+)
 
 
 def make_spiral_dataset(points_per_class: int = 500, noise: float = 0.1) -> TensorDataset:
