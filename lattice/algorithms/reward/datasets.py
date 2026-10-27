@@ -48,21 +48,21 @@ class DemonstrationBuffer:
         )
 
     def sample_preference_pairs(
-        self, n_pairs: int
+        self, num_pairs: int
     ) -> List[Tuple[Trajectory, Trajectory]]:
         """
         Sample (better, worse) pairs with strictly different ranks.
-        Returns up to n_pairs pairs (may return fewer if data is insufficient).
+        Returns up to num_pairs pairs (may return fewer if data is insufficient).
         """
         trajectories = self._trajectories
         if len(trajectories) < 2:
             raise ValueError("Need at least 2 trajectories to form preference pairs.")
 
         pairs: List[Tuple[Trajectory, Trajectory]] = []
-        max_attempts = n_pairs * 20
+        max_attempts = num_pairs * 20
         attempts = 0
 
-        while len(pairs) < n_pairs and attempts < max_attempts:
+        while len(pairs) < num_pairs and attempts < max_attempts:
             attempts += 1
             first_index, second_index = random.sample(range(len(trajectories)), 2)
             if trajectories[first_index].rank == trajectories[second_index].rank:

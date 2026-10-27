@@ -21,7 +21,7 @@ def run_training_step(
     model: nn.Module,
     inputs: torch.Tensor,
     targets: torch.Tensor,
-    loss_fn: LossFunction,
+    loss_function: LossFunction,
     optimizer: torch.optim.Optimizer,
     device: str = "cpu",
     output_mode: str = "auto",
@@ -49,10 +49,10 @@ def run_training_step(
             model=model,
             outputs=outputs,
             targets=targets,
-            loss_fn=loss_fn,
+            loss_function=loss_function,
             context=hook_context,
         )
-    loss = custom_loss if custom_loss is not None else loss_fn(outputs, targets)
+    loss = custom_loss if custom_loss is not None else loss_function(outputs, targets)
 
     optimizer.zero_grad()
     if hooks is not None:
@@ -79,7 +79,7 @@ def run_evaluation_step(
     model: nn.Module,
     inputs: torch.Tensor,
     targets: torch.Tensor,
-    loss_fn: LossFunction,
+    loss_function: LossFunction,
     device: str = "cpu",
     output_mode: str = "auto",
 ) -> BatchMetrics:
@@ -91,7 +91,7 @@ def run_evaluation_step(
     with torch.no_grad():
         outputs = model(inputs)
         outputs = select_training_outputs(outputs, output_mode=output_mode)
-        loss = loss_fn(outputs, targets)
+        loss = loss_function(outputs, targets)
 
     return BatchMetrics(
         loss=loss.item(),

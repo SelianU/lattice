@@ -41,7 +41,7 @@ class PPOAgentBuilder(BaseAgentBuilder):
             critic_optimizer=self._optimizer(critic.parameters(), spec, context.config.learning_rate, "critic_optimizer"),
             rollout_buffer=self.registry.build_buffer(
                 self._buffer_type(spec, "rollout"),
-                n_steps=context.config.n_steps,
+                num_steps=context.config.num_steps,
                 device=context.config.device,
                 gamma=context.config.gamma,
                 gae_lambda=context.config.gae_lambda,

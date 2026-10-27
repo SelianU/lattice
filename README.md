@@ -162,7 +162,7 @@ def run_custom_training_step(model, batch, context):
     targets = targets.to(context.device)
 
     outputs = model(inputs)
-    loss = context.loss_fn(outputs, targets)
+    loss = context.loss_function(outputs, targets)
 
     context.optimizer.zero_grad()
     loss.backward()
@@ -403,8 +403,8 @@ Supervised hook example:
 ```python
 from lattice import train_supervised_model
 
-def compute_loss(model, outputs, targets, loss_fn, context):
-    return loss_fn(outputs, targets) + regularization_term(model)
+def compute_loss(model, outputs, targets, loss_function, context):
+    return loss_function(outputs, targets) + regularization_term(model)
 
 history = train_supervised_model(
     model=model,

@@ -116,6 +116,11 @@ Preferred names:
 | `ep_r` | `episode_reward` |
 | `ep_lens` | `episode_lengths` |
 | `fn` | `function`, or a precise callable role such as `training_step_function` |
+| `loss_fn` | `loss_function` |
+| `obs`, `act` | `observation`, `action` |
+| `n_steps`, `n_epochs` | `num_steps`, `num_epochs` (the `num_*` form PyTorch uses for `num_layers`) |
+| `backbone_cfg`, `bb_cfg` | `backbone_config`, or `backbone_kwargs` for unpacked keyword arguments |
+| `RewardNormWrapper` | `RewardNormalizationWrapper` |
 
 Acceptable short names:
 

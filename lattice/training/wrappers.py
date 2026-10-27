@@ -9,7 +9,7 @@ from typing import Dict, Optional, Tuple, Union
 from .env_wrapper import BaseEnv
 
 
-class RewardNormWrapper(BaseEnv):
+class RewardNormalizationWrapper(BaseEnv):
     """
     Normalises rewards online using Welford's running mean/variance.
 
@@ -20,7 +20,7 @@ class RewardNormWrapper(BaseEnv):
     Usage
     -----
     env = GymEnvWrapper("Pendulum-v1")
-    env = RewardNormWrapper(env, clip=10.0)
+    env = RewardNormalizationWrapper(env, clip=10.0)
     trainer = RLTrainer(agent, env, config, ...)
     """
 

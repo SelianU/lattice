@@ -59,7 +59,7 @@ class _SumTree:
         self.capacity = capacity
         self.tree = np.zeros(2 * capacity - 1, dtype=np.float64)
         self.data: list = [None] * capacity
-        self.n_entries = 0
+        self.num_entries = 0
         self._write = 0
 
     # -- internal helpers --------------------------------------------------
@@ -80,7 +80,7 @@ class _SumTree:
         self.update(leaf, priority)
         self.data[self._write] = data
         self._write = (self._write + 1) % self.capacity
-        self.n_entries = min(self.n_entries + 1, self.capacity)
+        self.num_entries = min(self.num_entries + 1, self.capacity)
 
     def update(self, leaf_idx: int, priority: float):
         delta = priority - self.tree[leaf_idx]
@@ -178,7 +178,7 @@ class PrioritizedReplayBuffer:
             batch.append(data)
 
         probs = np.array(priorities, dtype=np.float32) / (total + 1e-8)
-        weights = (self._tree.n_entries * probs) ** (-self._beta)
+        weights = (self._tree.num_entries * probs) ** (-self._beta)
         weights = (weights / weights.max()).astype(np.float32)
 
         state, action, reward, next_state, done = zip(*batch)
@@ -210,7 +210,7 @@ class PrioritizedReplayBuffer:
             self._max_priority = max(self._max_priority, float(priority))
 
     def __len__(self) -> int:
-        return self._tree.n_entries
+        return self._tree.num_entries
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -314,19 +314,19 @@ class RolloutBuffer:
 
     Parameters
     ----------
-    n_steps     : Rollout length (number of environment steps per update).
+    num_steps   : Rollout length (number of environment steps per update).
     gamma       : Discount factor.
     gae_lambda  : GAE lambda (0 = TD(0), 1 = Monte-Carlo).
     """
 
     def __init__(
         self,
-        n_steps: int,
+        num_steps: int,
         device: str = "cpu",
         gamma: float = 0.99,
         gae_lambda: float = 0.95,
     ):
-        self.n_steps = n_steps
+        self.num_steps = num_steps
         self.device = torch.device(device)
         self.gamma = gamma
         self.gae_lambda = gae_lambda
@@ -346,7 +346,7 @@ class RolloutBuffer:
         self._dones.append(float(done))
 
     def is_full(self) -> bool:
-        return len(self._states) >= self.n_steps
+        return len(self._states) >= self.num_steps
 
     def _compute_gae(self, last_value: float = 0.0) -> Tuple[np.ndarray, np.ndarray]:
         n = len(self._rewards)

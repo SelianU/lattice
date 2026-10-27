@@ -25,13 +25,13 @@ def test_make_ppo_agent_defaults_to_discrete_action_space():
         action_dim=2,
         hidden_dims=[16],
         total_timesteps=10,
-        n_steps=4,
+        num_steps=4,
         batch_size=2,
         device="cpu",
     )
 
     assert isinstance(agent, PPOAgent)
-    assert agent.config.n_steps == 4
+    assert agent.config.num_steps == 4
 
 
 def test_make_sac_and_td3_agents_default_to_continuous_action_space():

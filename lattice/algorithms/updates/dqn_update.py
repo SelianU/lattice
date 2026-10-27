@@ -45,7 +45,7 @@ def run_dqn_update(
     q_network: nn.Module,
     target_q_network: nn.Module,
     optimizer: torch.optim.Optimizer,
-    loss_fn: nn.Module,
+    loss_function: nn.Module,
     batch: DQNUpdateBatch,
     gamma: float,
     is_double: bool = False,
@@ -76,7 +76,7 @@ def run_dqn_update(
         )
         loss = (element_loss * batch.importance_weights.squeeze(1)).mean()
     else:
-        loss = loss_fn(state_action_values, target_action_values)
+        loss = loss_function(state_action_values, target_action_values)
 
     optimizer.zero_grad()
     loss.backward()
@@ -91,7 +91,7 @@ def run_recurrent_dqn_update(
     q_network: nn.Module,
     target_q_network: nn.Module,
     optimizer: torch.optim.Optimizer,
-    loss_fn: nn.Module,
+    loss_function: nn.Module,
     batch: RecurrentDQNUpdateBatch,
     gamma: float,
     gradient_clip_norm: Optional[float] = 10.0,
@@ -107,11 +107,11 @@ def run_recurrent_dqn_update(
             batch.rewards + gamma * max_next_q_values * (1.0 - batch.dones)
         )
 
-    if hasattr(loss_fn, "reduction") and loss_fn.reduction != "none":
-        unreduced_loss_fn = type(loss_fn)(reduction="none")
-        raw_loss = unreduced_loss_fn(state_action_values, target_action_values)
+    if hasattr(loss_function, "reduction") and loss_function.reduction != "none":
+        unreduced_loss_function = type(loss_function)(reduction="none")
+        raw_loss = unreduced_loss_function(state_action_values, target_action_values)
     else:
-        raw_loss = loss_fn(state_action_values, target_action_values)
+        raw_loss = loss_function(state_action_values, target_action_values)
 
     masked_loss = raw_loss * batch.masks
     loss = masked_loss.sum() / (batch.masks.sum() + 1e-8)

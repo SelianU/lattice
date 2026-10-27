@@ -28,7 +28,7 @@ class SupervisedTrainingConfig:
 class SupervisedTrainingContext:
     """Context passed to custom training steps."""
 
-    loss_fn: LossFunction
+    loss_function: LossFunction
     optimizer: torch.optim.Optimizer
     device: str
     output_mode: str
@@ -115,7 +115,7 @@ def train_supervised_model(
     callbacks = [] if callbacks is None else callbacks
     hook_manager = HookManager(hooks, allowed_names=SUPERVISED_HOOK_NAMES)
     model = model.to(device)
-    loss_fn = make_loss(loss)
+    loss_function = make_loss(loss)
     optimizer_instance = make_optimizer(
         optimizer,
         model.parameters(),
@@ -123,7 +123,7 @@ def train_supervised_model(
         **optimizer_kwargs,
     )
     training_context = SupervisedTrainingContext(
-        loss_fn=loss_fn,
+        loss_function=loss_function,
         optimizer=optimizer_instance,
         device=device,
         output_mode=output_mode,
@@ -152,7 +152,7 @@ def train_supervised_model(
             validation_metrics = evaluate_supervised_model(
                 model=model,
                 data_loader=validation_loader,
-                loss=loss_fn,
+                loss=loss_function,
                 device=device,
                 output_mode=output_mode,
             )
@@ -198,13 +198,13 @@ def evaluate_supervised_model(
 ) -> BatchMetrics:
     """Evaluate a model over a full DataLoader."""
     model = model.to(device)
-    loss_fn = make_loss(loss)
+    loss_function = make_loss(loss)
     batch_metrics = [
         run_evaluation_step(
             model=model,
             inputs=inputs,
             targets=targets,
-            loss_fn=loss_fn,
+            loss_function=loss_function,
             device=device,
             output_mode=output_mode,
         )
@@ -237,7 +237,7 @@ def _run_training_epoch(
                 model=model,
                 inputs=inputs,
                 targets=targets,
-                loss_fn=context.loss_fn,
+                loss_function=context.loss_function,
                 optimizer=context.optimizer,
                 device=context.device,
                 output_mode=context.output_mode,

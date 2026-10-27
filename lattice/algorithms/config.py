@@ -112,8 +112,8 @@ class PPOConfig:
 
     # Rollout & optimization
     total_timesteps: int = 200_000
-    n_steps: int = 2048             # Rollout length before each update
-    n_epochs: int = 10              # PPO update epochs per rollout
+    num_steps: int = 2048           # Rollout length before each update
+    num_epochs: int = 10            # PPO update epochs per rollout
     batch_size: int = 64            # Mini-batch size for PPO updates
     learning_rate: float = 3e-4
     gamma: float = 0.99
@@ -136,8 +136,8 @@ class PPOConfig:
     def __post_init__(self):
         if self.device == "auto":
             self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        if self.batch_size > self.n_steps:
-            raise ValueError(f"batch_size ({self.batch_size}) must be <= n_steps ({self.n_steps})")
+        if self.batch_size > self.num_steps:
+            raise ValueError(f"batch_size ({self.batch_size}) must be <= num_steps ({self.num_steps})")
         if not (0 < self.gamma <= 1):
             raise ValueError(f"gamma must be in (0, 1], got {self.gamma}")
         if not (0.0 <= self.gae_lambda <= 1.0):

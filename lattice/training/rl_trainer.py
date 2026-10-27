@@ -153,7 +153,7 @@ class RLTrainer:
 
                 eval_interval = getattr(self.config, "eval_interval", 0)
                 if eval_interval > 0 and curr_episode % eval_interval == 0:
-                    eval_result = self.evaluate(n_episodes=5)
+                    eval_result = self.evaluate(num_episodes=5)
                     eval_metrics = {"eval_reward": eval_result["mean_reward"]}
                     self.logger.log_episode(curr_episode, global_step, eval_metrics)
                     history.append(eval_metrics)
@@ -179,7 +179,7 @@ class RLTrainer:
     # Evaluation                                                           #
     # ------------------------------------------------------------------ #
 
-    def evaluate(self, n_episodes: int = 10) -> Dict[str, float]:
+    def evaluate(self, num_episodes: int = 10) -> Dict[str, float]:
         """
         Run deterministic evaluation episodes.
         Returns mean and std of episode rewards.
@@ -191,7 +191,7 @@ class RLTrainer:
             config=self.config,
             evaluation=True,
         )
-        for episode_index in range(1, n_episodes + 1):
+        for episode_index in range(1, num_episodes + 1):
             hook_context.episode = episode_index
             state = self.env.reset()
             self._maybe_reset_hidden()

@@ -36,8 +36,8 @@ class Registry:
     Dict-driven construction
     ------------------------
     q_network = Registry.build_q_network(
-        backbone_cfg={"type": "mlp", "input_dim": 4, "hidden_dims": [128, 128]},
-        head_cfg={"action_dim": 2},
+        backbone_config={"type": "mlp", "input_dim": 4, "hidden_dims": [128, 128]},
+        head_config={"action_dim": 2},
     )
     """
 
@@ -214,38 +214,38 @@ class Registry:
     @classmethod
     def build_q_network(
         cls,
-        backbone_cfg: Dict[str, Any],
-        head_cfg: Dict[str, Any],
+        backbone_config: Dict[str, Any],
+        head_config: Dict[str, Any],
     ) -> QNetwork:
         """
         Build a QNetwork from plain dicts (e.g. loaded from YAML).
 
-        backbone_cfg: {"type": "mlp", "input_dim": 4, "hidden_dims": [128, 128]}
-        head_cfg:     {"action_dim": 2}
+        backbone_config: {"type": "mlp", "input_dim": 4, "hidden_dims": [128, 128]}
+        head_config:     {"action_dim": 2}
         """
-        bb_cfg = copy.deepcopy(backbone_cfg)
-        backbone = cls.build_backbone(bb_cfg.pop("type"), **bb_cfg)
-        return QNetwork(backbone, QHead(backbone.output_dim, **head_cfg))
+        backbone_kwargs = copy.deepcopy(backbone_config)
+        backbone = cls.build_backbone(backbone_kwargs.pop("type"), **backbone_kwargs)
+        return QNetwork(backbone, QHead(backbone.output_dim, **head_config))
 
     @classmethod
     def build_sac_actor(
         cls,
-        backbone_cfg: Dict[str, Any],
-        head_cfg: Dict[str, Any],
+        backbone_config: Dict[str, Any],
+        head_config: Dict[str, Any],
     ) -> SACActor:
-        bb_cfg = copy.deepcopy(backbone_cfg)
-        backbone = cls.build_backbone(bb_cfg.pop("type"), **bb_cfg)
-        return SACActor(backbone, GaussianPolicyHead(backbone.output_dim, **head_cfg))
+        backbone_kwargs = copy.deepcopy(backbone_config)
+        backbone = cls.build_backbone(backbone_kwargs.pop("type"), **backbone_kwargs)
+        return SACActor(backbone, GaussianPolicyHead(backbone.output_dim, **head_config))
 
     @classmethod
     def build_sac_critic(
         cls,
-        backbone_cfg: Dict[str, Any],
-        head_cfg: Dict[str, Any],
+        backbone_config: Dict[str, Any],
+        head_config: Dict[str, Any],
     ) -> SACCritic:
-        bb_cfg = copy.deepcopy(backbone_cfg)
-        backbone = cls.build_backbone(bb_cfg.pop("type"), **bb_cfg)
-        return SACCritic(backbone, DoubleQCriticHead(backbone.output_dim, **head_cfg))
+        backbone_kwargs = copy.deepcopy(backbone_config)
+        backbone = cls.build_backbone(backbone_kwargs.pop("type"), **backbone_kwargs)
+        return SACCritic(backbone, DoubleQCriticHead(backbone.output_dim, **head_config))
 
     # ------------------------------------------------------------------ #
     # Introspection                                                        #

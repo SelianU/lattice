@@ -30,7 +30,7 @@ from .supervised_training import (
     evaluate_supervised_model,
     train_supervised_model,
 )
-from .wrappers import RewardNormWrapper, LearnedRewardWrapper
+from .wrappers import RewardNormalizationWrapper, LearnedRewardWrapper
 from .factory import quick_dqn, quick_sac, quick_ppo, quick_td3
 
 __all__ = [
@@ -56,7 +56,7 @@ __all__ = [
     "TrainingStepFunction",
     "evaluate_supervised_model", "train_supervised_model",
     # Wrappers
-    "RewardNormWrapper", "LearnedRewardWrapper",
+    "RewardNormalizationWrapper", "LearnedRewardWrapper",
     # Factories
     "quick_dqn", "quick_sac", "quick_ppo", "quick_td3",
 ]

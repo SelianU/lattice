@@ -41,42 +41,42 @@ class BaseEnv(ABC):
 class GymEnvWrapper(BaseEnv):
     """
     Wraps a Gymnasium environment.
-    Pass obs_transform to apply per-step observation preprocessing
+    Pass observation_transform to apply per-step observation preprocessing
     (e.g. POMDP masking, normalisation).
     """
 
     def __init__(
         self,
         env_name: str,
-        obs_transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+        observation_transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
         **gym_kwargs,
     ):
         self._env = gym.make(env_name, **gym_kwargs)
-        self._obs_transform = obs_transform
+        self._observation_transform = observation_transform
 
-        obs_space = self._env.observation_space
-        act_space = self._env.action_space
+        observation_space = self._env.observation_space
+        action_space = self._env.action_space
 
-        if hasattr(obs_space, "shape"):
+        if hasattr(observation_space, "shape"):
             self._state_dim: Union[int, Tuple] = (
-                obs_space.shape[0] if len(obs_space.shape) == 1 else obs_space.shape
+                observation_space.shape[0] if len(observation_space.shape) == 1 else observation_space.shape
             )
         else:
-            self._state_dim = obs_space.n
+            self._state_dim = observation_space.n
 
-        if hasattr(act_space, "n"):
-            self._action_dim = act_space.n
+        if hasattr(action_space, "n"):
+            self._action_dim = action_space.n
             self._is_continuous = False
             self._action_low: Optional[float] = None
             self._action_high: Optional[float] = None
         else:
-            self._action_dim = act_space.shape[0]
+            self._action_dim = action_space.shape[0]
             self._is_continuous = True
-            self._action_low = float(act_space.low[0])
-            self._action_high = float(act_space.high[0])
+            self._action_low = float(action_space.low[0])
+            self._action_high = float(action_space.high[0])
 
     def _transform(self, obs: np.ndarray) -> np.ndarray:
-        return self._obs_transform(obs) if self._obs_transform else obs
+        return self._observation_transform(obs) if self._observation_transform else obs
 
     def reset(self) -> np.ndarray:
         obs, _ = self._env.reset()
@@ -125,7 +125,7 @@ class CustomEnvWrapper(BaseEnv):
         is_continuous: bool = False,
         action_low: Optional[float] = None,
         action_high: Optional[float] = None,
-        obs_transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
+        observation_transform: Optional[Callable[[np.ndarray], np.ndarray]] = None,
     ):
         self._env = env
         self._state_dim = state_dim
@@ -133,10 +133,10 @@ class CustomEnvWrapper(BaseEnv):
         self._is_continuous = is_continuous
         self._action_low = action_low
         self._action_high = action_high
-        self._obs_transform = obs_transform
+        self._observation_transform = observation_transform
 
     def _transform(self, obs: np.ndarray) -> np.ndarray:
-        return self._obs_transform(obs) if self._obs_transform else obs
+        return self._observation_transform(obs) if self._observation_transform else obs
 
     def reset(self) -> np.ndarray:
         result = self._env.reset()

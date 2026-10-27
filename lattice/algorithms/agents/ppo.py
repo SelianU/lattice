@@ -96,7 +96,7 @@ class PPOAgent(BaseAgent):
 
         actor_losses, value_losses, entropies = [], [], []
 
-        for _ in range(self.config.n_epochs):
+        for _ in range(self.config.num_epochs):
             for states, actions, old_log_probs, advantages, returns in \
                     self.rollout_buffer.get_batches(self.config.batch_size, last_value):
 

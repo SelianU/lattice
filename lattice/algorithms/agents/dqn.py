@@ -125,7 +125,7 @@ class DQNAgent(BaseAgent):
             q_network=self.q_network,
             target_q_network=self.target_network,
             optimizer=self.optimizer,
-            loss_fn=self.criterion,
+            loss_function=self.criterion,
             batch=batch,
             gamma=self.config.gamma,
             is_double=self.is_double,
@@ -161,7 +161,7 @@ class DQNAgent(BaseAgent):
             q_network=self.q_network,
             target_q_network=self.target_network,
             optimizer=self.optimizer,
-            loss_fn=self.criterion,
+            loss_function=self.criterion,
             batch=batch,
             gamma=self.config.gamma,
         )

@@ -95,16 +95,16 @@ class RewardModelTrainer:
     def train(
         self,
         demo_buffer: DemonstrationBuffer,
-        n_epochs: int = 300,
+        num_epochs: int = 300,
         batch_size: int = 32,
         log_interval: int = 50,
     ) -> List[float]:
         """Full training loop. Returns per-epoch loss history."""
         losses = []
-        for epoch in range(1, n_epochs + 1):
+        for epoch in range(1, num_epochs + 1):
             loss = self.train_epoch(demo_buffer, batch_size)
             losses.append(loss)
             if epoch % log_interval == 0:
-                print(f"  Reward epoch {epoch:4d}/{n_epochs} | Loss: {loss:.4f}")
+                print(f"  Reward epoch {epoch:4d}/{num_epochs} | Loss: {loss:.4f}")
         self.reward_model.eval()
         return losses
