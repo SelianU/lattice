@@ -14,7 +14,7 @@ class DQNUpdateBatch:
     actions: torch.Tensor
     rewards: torch.Tensor
     next_states: torch.Tensor
-    dones: torch.Tensor
+    terminated: torch.Tensor
     importance_weights: Optional[torch.Tensor] = None
 
 
@@ -26,7 +26,7 @@ class RecurrentDQNUpdateBatch:
     actions: torch.Tensor
     rewards: torch.Tensor
     next_states: torch.Tensor
-    dones: torch.Tensor
+    terminated: torch.Tensor
     masks: torch.Tensor
 
 
@@ -64,7 +64,7 @@ def run_dqn_update(
 
         target_action_values = (
             batch.rewards.squeeze(1)
-            + gamma * max_next_q_values * (1.0 - batch.dones.squeeze(1))
+            + gamma * max_next_q_values * (1.0 - batch.terminated.squeeze(1))
         )
 
     td_errors = state_action_values - target_action_values
@@ -104,7 +104,7 @@ def run_recurrent_dqn_update(
         next_q_sequence, _ = target_q_network(batch.next_states)
         max_next_q_values = next_q_sequence.max(dim=-1, keepdim=True)[0]
         target_action_values = (
-            batch.rewards + gamma * max_next_q_values * (1.0 - batch.dones)
+            batch.rewards + gamma * max_next_q_values * (1.0 - batch.terminated)
         )
 
     if hasattr(loss_function, "reduction") and loss_function.reduction != "none":

@@ -110,7 +110,8 @@ def _run_interaction(
             transition.action,
             transition.reward,
             transition.next_state,
-            transition.done,
+            transition.terminated,
+            transition.truncated,
         )
         if update:
             hooks.run("before_update", agent=agent, context=context)

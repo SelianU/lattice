@@ -7,12 +7,24 @@ class BaseAgent(ABC):
     Abstract Base Class for Reinforcement Learning Agents.
     """
 
-    def observe(self, state: np.ndarray, action, reward: float, next_state: np.ndarray, done: bool) -> None:
+    def observe(
+        self,
+        state: np.ndarray,
+        action,
+        reward: float,
+        next_state: np.ndarray,
+        terminated: bool,
+        truncated: bool = False,
+    ) -> None:
         """
         Store a transition. Default implementation delegates to self.replay_buffer.
         Override for on-policy agents (PPO, etc.) that don't use a replay buffer.
+
+        `terminated` means no future reward follows `next_state`. `truncated`
+        means the episode was cut off (for example by a time limit) and the
+        value of `next_state` should still be bootstrapped.
         """
-        self.replay_buffer.push(state, action, reward, next_state, done)
+        self.replay_buffer.push(state, action, reward, next_state, terminated, truncated)
 
     @abstractmethod
     def select_action(self, state: np.ndarray, evaluation: bool = False) -> Union[int, np.ndarray]:

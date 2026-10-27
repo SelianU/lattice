@@ -105,10 +105,10 @@ class DQNAgent(BaseAgent):
         is_per = isinstance(self.replay_buffer, PrioritizedReplayBuffer)
 
         if is_per:
-            states, actions, rewards, next_states, dones, weights, idxs = \
+            states, actions, rewards, next_states, terminated, weights, idxs = \
                 self.replay_buffer.sample(self.config.batch_size)
         else:
-            states, actions, rewards, next_states, dones = \
+            states, actions, rewards, next_states, terminated = \
                 self.replay_buffer.sample(self.config.batch_size)
             weights = None
 
@@ -118,7 +118,7 @@ class DQNAgent(BaseAgent):
             actions=actions,
             rewards=rewards,
             next_states=next_states,
-            dones=dones,
+            terminated=terminated,
             importance_weights=weights,
         )
         update_metrics = run_dqn_update(
@@ -145,7 +145,7 @@ class DQNAgent(BaseAgent):
         # Sequence batch size and sequence length
         # For RNNs, we sample sequences of length L
         seq_len = self.config.sequence_length
-        states, actions, rewards, next_states, dones, masks = self.replay_buffer.sample(
+        states, actions, rewards, next_states, terminated, masks = self.replay_buffer.sample(
             self.config.batch_size, seq_len
         )
         
@@ -154,7 +154,7 @@ class DQNAgent(BaseAgent):
             actions=actions,
             rewards=rewards,
             next_states=next_states,
-            dones=dones,
+            terminated=terminated,
             masks=masks,
         )
         update_metrics = run_recurrent_dqn_update(

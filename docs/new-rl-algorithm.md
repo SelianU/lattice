@@ -43,7 +43,7 @@ class A2CAgent:
     def select_action(self, state, evaluation=False):
         ...
 
-    def observe(self, state, action, reward, next_state, done):
+    def observe(self, state, action, reward, next_state, terminated, truncated):
         ...
 
     def update(self):
@@ -55,6 +55,10 @@ class A2CAgent:
 
 `RLTrainer` only relies on that interface. The algorithm can store rollouts,
 sample replay, update every step, or update every episode internally.
+
+Bootstrap from `next_state` unless `terminated` is true. `truncated` means the
+episode was cut off (usually by a time limit), not that it reached a terminal
+state; treat `terminated or truncated` only as the episode boundary.
 
 ## 3. Create an AgentBuilder
 

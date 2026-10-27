@@ -95,7 +95,7 @@ class SACAgent(BaseAgent):
             return {}
             
         # Sample replay buffer
-        states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.config.batch_size)
+        states, actions, rewards, next_states, terminated = self.replay_buffer.sample(self.config.batch_size)
         
         # ------------------ Update Critic ------------------
         with torch.no_grad():
@@ -106,8 +106,8 @@ class SACAgent(BaseAgent):
             next_q1, next_q2 = self.critic_target(next_states, next_actions)
             min_next_q = torch.min(next_q1, next_q2)
             
-            # Target Q value: y = r + gamma * (min(Q_target) - alpha * log_prob) * (1 - done)
-            target_q = rewards + self.gamma * (min_next_q - self.alpha * next_log_probs) * (1.0 - dones)
+            # Target Q value: y = r + gamma * (min(Q_target) - alpha * log_prob) * (1 - terminated)
+            target_q = rewards + self.gamma * (min_next_q - self.alpha * next_log_probs) * (1.0 - terminated)
             
         # Current twin Q values
         current_q1, current_q2 = self.critic(states, actions)

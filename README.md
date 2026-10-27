@@ -204,7 +204,10 @@ environment = GymnasiumEnvAdapter(
 )
 ```
 
-If your environment loop lives outside `lattice`, create only the agent:
+If your environment loop lives outside `lattice`, create only the agent.
+Pass `terminated` and `truncated` separately: a time-limit cut-off
+(`truncated`) still has future value, so the agent keeps bootstrapping from
+`next_state`, while `terminated` means the episode truly ended.
 
 ```python
 from lattice import make_dqn_agent
@@ -218,8 +221,8 @@ agent = make_dqn_agent(
 )
 
 action = agent.select_action(state)
-next_state, reward, done, info = external_system_step(action)
-agent.observe(state, action, reward, next_state, done)
+next_state, reward, terminated, truncated, info = external_system_step(action)
+agent.observe(state, action, reward, next_state, terminated, truncated)
 metrics = agent.update()
 ```
 
@@ -241,8 +244,8 @@ Then use the agent with any external system:
 
 ```python
 action = agent.select_action(state)
-next_state, reward, done, info = external_system_step(action)
-agent.observe(state, action, reward, next_state, done)
+next_state, reward, terminated, truncated, info = external_system_step(action)
+agent.observe(state, action, reward, next_state, terminated, truncated)
 metrics = agent.update()
 ```
 

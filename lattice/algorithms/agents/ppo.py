@@ -52,13 +52,31 @@ class PPOAgent(BaseAgent):
     # BaseAgent interface                                                   #
     # ------------------------------------------------------------------ #
 
-    def observe(self, state, action, reward: float, next_state, done: bool) -> None:
+    def observe(
+        self,
+        state,
+        action,
+        reward: float,
+        next_state,
+        terminated: bool,
+        truncated: bool = False,
+    ) -> None:
+        if truncated and not terminated:
+            # The episode was cut off, not finished: keep the value of the
+            # state it stopped in by folding it into the final reward.
+            reward = float(reward) + self.config.gamma * self._state_value(next_state)
+        done = bool(terminated or truncated)
         self.rollout_buffer.push(
             state, action, reward,
             self._pending_value, self._pending_log_prob, done,
         )
         self._last_next_state = next_state
-        self._last_done = bool(done)
+        self._last_done = done
+
+    def _state_value(self, state) -> float:
+        state_t = torch.from_numpy(np.array(state, dtype=np.float32)).unsqueeze(0).to(self.device)
+        with torch.no_grad():
+            return self.critic(state_t).squeeze(-1).item()
 
     def select_action(self, state: np.ndarray, evaluation: bool = False):
         self.global_step += 1
@@ -89,10 +107,7 @@ class PPOAgent(BaseAgent):
             if self._last_done or self._last_next_state is None:
                 last_value = 0.0
             else:
-                last_s = torch.from_numpy(
-                    np.array(self._last_next_state, dtype=np.float32)
-                ).unsqueeze(0).to(self.device)
-                last_value = self.critic(last_s).squeeze(-1).item()
+                last_value = self._state_value(self._last_next_state)
 
         actor_losses, value_losses, entropies = [], [], []
 

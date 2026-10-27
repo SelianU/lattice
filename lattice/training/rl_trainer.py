@@ -25,7 +25,7 @@ class RLTrainer:
         step(action) -> EnvTransition
 
     The agent must implement:
-        observe(state, action, reward, next_state, done)
+        observe(state, action, reward, next_state, terminated, truncated)
         select_action(state, evaluation) -> action
         update() -> dict of metrics (may be empty)
         save(filepath)

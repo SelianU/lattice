@@ -13,18 +13,22 @@ class ReplayBuffer:
     """
     Standard i.i.d. replay buffer for off-policy agents (DQN, SAC, TD3).
     Stores individual transitions and samples uniformly at random.
+
+    Only `terminated` is stored: it decides whether the target bootstraps from
+    the next state. A truncated transition still bootstraps, so `truncated`
+    is accepted for a uniform push signature and otherwise ignored.
     """
 
     def __init__(self, capacity: int, device: str = "cpu"):
         self.buffer = deque(maxlen=capacity)
         self.device = torch.device(device)
 
-    def push(self, state, action, reward, next_state, done):
-        self.buffer.append((state, action, reward, next_state, done))
+    def push(self, state, action, reward, next_state, terminated, truncated=False):
+        self.buffer.append((state, action, reward, next_state, terminated))
 
     def sample(self, batch_size: int) -> Tuple[torch.Tensor, ...]:
         batch = random.sample(self.buffer, batch_size)
-        state, action, reward, next_state, done = zip(*batch)
+        state, action, reward, next_state, terminated = zip(*batch)
 
         state_np = np.array(state, dtype=np.float32)
         next_state_np = np.array(next_state, dtype=np.float32)
@@ -34,14 +38,14 @@ class ReplayBuffer:
             else np.array(action, dtype=np.float32)
         )
         reward_np = np.array(reward, dtype=np.float32)
-        done_np = np.array(done, dtype=np.float32)
+        terminated_np = np.array(terminated, dtype=np.float32)
 
         return (
             torch.from_numpy(state_np).to(self.device),
             torch.from_numpy(action_np).to(self.device),
             torch.from_numpy(reward_np).unsqueeze(1).to(self.device),
             torch.from_numpy(next_state_np).to(self.device),
-            torch.from_numpy(done_np).unsqueeze(1).to(self.device),
+            torch.from_numpy(terminated_np).unsqueeze(1).to(self.device),
         )
 
     def __len__(self) -> int:
@@ -151,8 +155,8 @@ class PrioritizedReplayBuffer:
         self._max_priority = 1.0
         self._step = 0
 
-    def push(self, state, action, reward, next_state, done):
-        self._tree.add(self._max_priority ** self.alpha, (state, action, reward, next_state, done))
+    def push(self, state, action, reward, next_state, terminated, truncated=False):
+        self._tree.add(self._max_priority ** self.alpha, (state, action, reward, next_state, terminated))
 
     def sample(self, batch_size: int):
         """
@@ -181,7 +185,7 @@ class PrioritizedReplayBuffer:
         weights = (self._tree.num_entries * probs) ** (-self._beta)
         weights = (weights / weights.max()).astype(np.float32)
 
-        state, action, reward, next_state, done = zip(*batch)
+        state, action, reward, next_state, terminated = zip(*batch)
         state_np = np.array(state, dtype=np.float32)
         next_state_np = np.array(next_state, dtype=np.float32)
         action_np = (
@@ -190,14 +194,14 @@ class PrioritizedReplayBuffer:
             else np.array(action, dtype=np.float32)
         )
         reward_np = np.array(reward, dtype=np.float32)
-        done_np = np.array(done, dtype=np.float32)
+        terminated_np = np.array(terminated, dtype=np.float32)
 
         return (
             torch.from_numpy(state_np).to(self.device),
             torch.from_numpy(action_np).to(self.device),
             torch.from_numpy(reward_np).unsqueeze(1).to(self.device),
             torch.from_numpy(next_state_np).to(self.device),
-            torch.from_numpy(done_np).unsqueeze(1).to(self.device),
+            torch.from_numpy(terminated_np).unsqueeze(1).to(self.device),
             torch.from_numpy(weights).unsqueeze(1).to(self.device),
             idxs,
         )
@@ -221,6 +225,9 @@ class SequenceReplayBuffer:
     """
     Episode-based replay buffer for recurrent agents (DRQN, Transformer).
     Stores complete episodes and samples sub-sequences of length L with padding.
+
+    An episode ends on `terminated` or `truncated`; only `terminated` is stored
+    for bootstrapping.
     """
 
     def __init__(self, capacity_episodes: int, device: str = "cpu"):
@@ -228,9 +235,9 @@ class SequenceReplayBuffer:
         self.current_episode: list = []
         self.device = torch.device(device)
 
-    def push(self, state, action, reward, next_state, done):
-        self.current_episode.append((state, action, reward, next_state, done))
-        if done:
+    def push(self, state, action, reward, next_state, terminated, truncated=False):
+        self.current_episode.append((state, action, reward, next_state, terminated))
+        if terminated or truncated:
             self.buffer.append(self.current_episode)
             self.current_episode = []
 
@@ -248,13 +255,13 @@ class SequenceReplayBuffer:
                 slice_len = seq_len
 
             sub = episode[start_idx: start_idx + slice_len]
-            states, actions, rewards, next_states, dones = zip(*sub)
+            states, actions, rewards, next_states, terminations = zip(*sub)
 
             states = list(states)
             actions = list(actions)
             rewards = list(rewards)
             next_states = list(next_states)
-            dones = list(dones)
+            terminations = list(terminations)
             masks = [1.0] * slice_len
 
             pad = seq_len - slice_len
@@ -268,14 +275,14 @@ class SequenceReplayBuffer:
                 else:
                     actions.extend([np.zeros(a_shape, dtype=np.float32)] * pad)
                 rewards.extend([0.0] * pad)
-                dones.extend([True] * pad)
+                terminations.extend([True] * pad)
                 masks.extend([0.0] * pad)
 
             batch_s.append(states)
             batch_a.append(actions)
             batch_r.append(rewards)
             batch_ns.append(next_states)
-            batch_d.append(dones)
+            batch_d.append(terminations)
             batch_m.append(masks)
 
         s_np = np.array(batch_s, dtype=np.float32)
@@ -311,6 +318,10 @@ class RolloutBuffer:
     Fixed-length on-policy rollout buffer for PPO.
     Stores (state, action, reward, value, log_prob, done) for N steps,
     then computes GAE advantages and yields mini-batches for K epochs of updates.
+
+    `done` marks the end of an episode and stops GAE from crossing into the
+    next one. For truncated episodes the agent folds the bootstrap value into
+    the reward before pushing, so `done` can be true for both endings.
 
     Parameters
     ----------

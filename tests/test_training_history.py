@@ -12,8 +12,8 @@ class DummyAgent:
     def select_action(self, state, evaluation=False):
         return 0
 
-    def observe(self, state, action, reward, next_state, done):
-        self.observed.append((state, action, reward, next_state, done))
+    def observe(self, state, action, reward, next_state, terminated, truncated):
+        self.observed.append((state, action, reward, next_state, terminated, truncated))
 
     def update(self):
         return {"loss": 0.25}

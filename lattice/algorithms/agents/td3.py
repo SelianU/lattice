@@ -87,7 +87,7 @@ class TD3Agent(BaseAgent):
             return {}
 
         self.global_step += 1
-        states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.config.batch_size)
+        states, actions, rewards, next_states, terminated = self.replay_buffer.sample(self.config.batch_size)
         self._update_count += 1
 
         # ---- Critic update -------------------------------------------
@@ -99,7 +99,7 @@ class TD3Agent(BaseAgent):
                 self.action_low, self.action_high
             )
             next_q1, next_q2 = self.critic_target(next_states, next_actions)
-            target_q = rewards + self.config.gamma * torch.min(next_q1, next_q2) * (1.0 - dones)
+            target_q = rewards + self.config.gamma * torch.min(next_q1, next_q2) * (1.0 - terminated)
 
         current_q1, current_q2 = self.critic(states, actions)
         critic_loss = F.mse_loss(current_q1, target_q) + F.mse_loss(current_q2, target_q)
