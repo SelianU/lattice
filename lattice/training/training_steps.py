@@ -5,6 +5,7 @@ import torch
 import torch.nn as nn
 
 from .hooks import HookManager, SupervisedHookContext
+from .optimizers import LossFunction
 
 
 @dataclass(frozen=True)
@@ -20,7 +21,7 @@ def run_training_step(
     model: nn.Module,
     inputs: torch.Tensor,
     targets: torch.Tensor,
-    loss_fn: nn.Module,
+    loss_fn: LossFunction,
     optimizer: torch.optim.Optimizer,
     device: str = "cpu",
     output_mode: str = "auto",
@@ -78,7 +79,7 @@ def run_evaluation_step(
     model: nn.Module,
     inputs: torch.Tensor,
     targets: torch.Tensor,
-    loss_fn: nn.Module,
+    loss_fn: LossFunction,
     device: str = "cpu",
     output_mode: str = "auto",
 ) -> BatchMetrics:

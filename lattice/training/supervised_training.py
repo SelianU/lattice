@@ -4,7 +4,7 @@ from typing import Any, Callable, Dict, List, Optional
 import torch
 import torch.nn as nn
 
-from .optimizers import LossLike, OptimizerLike, make_loss, make_optimizer
+from .optimizers import LossFunction, LossLike, OptimizerLike, make_loss, make_optimizer
 from .hooks import HookManager, HookSpec, SupervisedHookContext, SUPERVISED_HOOK_NAMES
 from .training_steps import BatchMetrics, run_evaluation_step, run_training_step
 
@@ -28,7 +28,7 @@ class SupervisedTrainingConfig:
 class SupervisedTrainingContext:
     """Context passed to custom training steps."""
 
-    loss_fn: nn.Module
+    loss_fn: LossFunction
     optimizer: torch.optim.Optimizer
     device: str
     output_mode: str

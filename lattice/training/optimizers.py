@@ -1,24 +1,30 @@
-from typing import Iterable, Union
+from typing import Callable, Iterable, Union
 
 import torch
 import torch.nn as nn
 
 
-LossLike = Union[str, nn.Module]
+LossFunction = Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+LossLike = Union[str, LossFunction]
 OptimizerLike = Union[str, type, torch.optim.Optimizer]
 
 
-def make_loss(loss: LossLike) -> nn.Module:
+def make_loss(loss: LossLike) -> LossFunction:
     """
     Build a loss module from a beginner-friendly name or return an existing loss.
+
+    Any callable `(outputs, targets) -> loss` is returned unchanged, including
+    `nn.Module` losses and functions such as `torch.nn.functional.cross_entropy`.
 
     Supported names:
     - "cross_entropy": classification with class-index targets.
     - "mse": regression or value fitting.
     - "smooth_l1": robust regression, commonly used by DQN-style updates.
     """
-    if isinstance(loss, nn.Module):
-        return loss
+    if not isinstance(loss, str):
+        if callable(loss):
+            return loss
+        raise TypeError(f"loss must be a name or a callable, got {type(loss).__name__}")
 
     if loss == "cross_entropy":
         return nn.CrossEntropyLoss()
